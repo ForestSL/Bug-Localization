@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+ 	<extension point="org.eclipse.ui.perspectives">
+           <perspective
+            name="SLPerspective"
+            icon="icons/sample.gif"
+            class="com.sl.v0.perspectives.SamplePerspective"
+            id="com.sl.v0.perspectives.SamplePerspective">
+        </perspective>
+ 	</extension>
+ 	
+ 	<extension point="org.eclipse.ui.views">
+     	<view
+             name="Package Explorer"
+             icon="icons/sample.gif"
+             category="com.sl.view"
+             class="com.sl.v0.views.View1"
+             id="com.sl.v0.views.View1">
+     	</view>
+     	<view
+             name="文件排序区"
+             icon="icons/sample.gif"
+             category="com.sl.view"
+             class="com.sl.v0.views.View2"
+             id="com.sl.v0.views.View2">
+     	</view>
+     	<view
+             name="bug展示区"
+             icon="icons/sample.gif"
+             category="com.sl.view"
+             class="com.sl.v0.views.View3"
+             id="com.sl.v0.views.View3">
+     	</view>
+     	<view
+             name="Outline"
+             icon="icons/sample.gif"
+             category="com.sl.view"
+             class="com.sl.v0.views.View4"
+             id="com.sl.v0.views.View4">
+     	</view>
+ 	</extension>
+ 	
+ 	<extension point="org.eclipse.ui.editors">
+  		<editor 
+        	name="SL_Editor"
+        	icon="icons/sample.gif"
+        	class="com.sl.v0.editors.Editor"
+        	id="com.sl.v0.editors.Editor">
+  		</editor>
+  	</extension>
+
+   	<extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            label="bug定位"
+            visible="false"
+            id="com.sl.v0.actionSet">
+         <menu
+               label="SLTool"
+               id="sampleMenu">
+            <separator
+                  name="sampleGroup">
+            </separator>
+         </menu>
+         <action
+               label="bug定位"
+               icon="icons/sample.gif"
+               class="com.sl.v0.actions.SampleAction"
+               tooltip="bug定位"
+               menubarPath="sampleMenu/sampleGroup"
+               toolbarPath="sampleGroup"
+               id="com.sl.v0.actions.SampleAction">
+         </action>
+      </actionSet>
+   	</extension>
+   
+</plugin>
