@@ -1,6 +1,10 @@
 package com.sl.v0.views;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -8,13 +12,27 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.eclipse.ui.part.ViewPart;
 
+import com.sl.v0.editors.EditorInput;
+
 public class View2 extends ViewPart {
-    private List list;
     private Table table;
+    
+    /*测试数据，模拟bug分析后的数据*/
+    private String[][] test={
+    		{"a.java","100","35","24","10","66"},
+    		{"b.java","100","35","24","10","66"},
+    		{"c.xml","100","35","24","10","66"},
+    		{"d.xml","100","35","24","10","66"}};
     public void createPartControl(Composite parent) {
         IWorkbenchHelpSystem help = PlatformUI.getWorkbench().getHelpSystem();
         help.setHelp(parent, "com.sl.v0.buttonHelpId");
@@ -27,7 +45,7 @@ public class View2 extends ViewPart {
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
         
         TableColumn column0 = new TableColumn(table,SWT.NULL);
-        column0.setText("文件名");
+        column0.setText("");
         column0.pack();
         column0.setWidth(150);
         
@@ -56,16 +74,65 @@ public class View2 extends ViewPart {
         column5.pack();
         column5.setWidth(150);
         
-        TableItem item0 = new TableItem(table,SWT.NONE);
-        item0.setText(new String[]{"文件a"});
-        TableItem item1 = new TableItem(table,SWT.NONE);
-        item1.setText(new String[]{"文件b"});
-        TableItem item2 = new TableItem(table,SWT.NONE);
-        item2.setText(new String[]{"文件c"});
-        TableItem item3 = new TableItem(table,SWT.NONE);
-        item3.setText(new String[]{"文件d"});
-        TableItem item4 = new TableItem(table,SWT.NONE);
-        item4.setText(new String[]{"文件e"});
+        for(int i=0;i<test.length;i++){
+        	TableItem item = new TableItem(table,SWT.NONE);
+        	item.setText(test[i]);
+        }
+        
+        /*鼠标点击事件监听*/
+        table.addMouseListener(new MouseAdapter() {
+            private EditorInput EditorInput = new EditorInput();
+
+            public void mouseDoubleClick(MouseEvent e) {
+                // 根据不同列表项得到其相应的editorInput对象和editorID，其中
+                // editorID指该编辑器在plugin.xml文件中设置id标识值
+                Table table = (Table) e.getSource();// 由MouseEvent得到列表对象
+                
+                int row=table.getSelectionIndex();/*获取行*/
+                
+                System.out.println(row);
+                
+//                TableItem tableStr = table.getSelection()[0];// 得到当前列表项的字符
+//                System.out.println(tableStr);
+                
+                IEditorInput editorInput = null;
+                String editorID = null;
+                editorInput = EditorInput;
+                editorID = "com.sl.v0.editors.Editor";
+              
+                // 如果editorInput或editorID为空则中断返回
+                if (editorInput == null || editorID == null)
+                    return;
+                // 取得IWorkbenchPage，并搜索使用editorInput对象对应的编辑器
+                IWorkbenchPage workbenchPage = getViewSite().getPage();
+                IEditorPart editor = workbenchPage.findEditor(editorInput);
+                // 如果此编辑器已经存在，则将它设为当前的编辑器（最顶端），否则
+                // 重新打开一个编辑器
+                if (editor != null) {
+                    workbenchPage.bringToTop(editor);
+                } else {
+                    try {
+                        workbenchPage.openEditor(editorInput, editorID);
+                    } catch (PartInitException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+            }
+        });
+        
+        /* 列表选择事件监听*/
+        table.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent e) {
+                // 由IWorkbenchPage获得view3对象
+                IWorkbenchPage wbp = getViewSite().getPage();
+                IViewPart view3 = wbp.findView("com.sl.v0.views.View3");
+                // 将当前选择的列表项显示在文本框中
+                Text text = ((View3) view3).getText();
+                //System.out.println(table.getSelection()[0]);
+                text.setText(table.getSelection()[0].toString());
+            }
+        });
+        
     }
     @Override
     public void setFocus() {}

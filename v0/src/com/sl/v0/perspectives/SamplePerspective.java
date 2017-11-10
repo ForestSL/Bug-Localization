@@ -15,9 +15,9 @@ public class SamplePerspective implements IPerspectiveFactory {
         /*得到本透视图的编辑空间标识*/
         String editorArea = layout.getEditorArea();
         
-        /*在透视图左部创建一个空间，并将“视图1”放入其中。*/
+        /*在透视图左部创建一个空间，并将PackageExplorer放入其中。*/
         IFolderLayout left = layout.createFolder("left", IPageLayout.LEFT, 0.15f, editorArea);
-        left.addView("com.sl.v0.views.View1"); /*参数为plugin.xml中“视图1”的id标识*/
+        left.addView("org.eclipse.jdt.ui.PackageExplorer");
         
         /*将“视图2、视图3”加入到透视图的底部*/
         IFolderLayout bottom = layout.createFolder("bottom", IPageLayout.BOTTOM, 0.5f, editorArea);
@@ -26,9 +26,9 @@ public class SamplePerspective implements IPerspectiveFactory {
         		IPageLayout.BOTTOM, 0.5f,"bottom");
         bottomFolder.addView("com.sl.v0.views.View3");
         
-        /*将“视图4”放入透视图右边*/
+        /*将大纲视图Outline放入透视图右边*/
         IFolderLayout right = layout.createFolder(IPageLayout.ID_OUTLINE, IPageLayout.RIGHT, 0.8f, editorArea);
-        right.addView("com.sl.v0.views.View4");
+        right.addView("org.eclipse.ui.views.ContentOutline");
         
         /* 将以前定义的actionset（主菜单、工具栏按钮）加入到本透视图。
          * 这要在plugin.xml文件的action设置中将visible="false"才看得出效果，

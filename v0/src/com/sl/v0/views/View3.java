@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
 
 public class View3 extends ViewPart {
+	private Text text;
 	
     public void createPartControl(Composite parent) {
         Composite topComp = new Composite(parent,SWT.NONE);
@@ -16,4 +17,11 @@ public class View3 extends ViewPart {
     }
     
     public void setFocus() {}
+    
+    public Text getText() {
+        return text;
+    }
+    public void setText(Text text) {
+        this.text = text;
+    }
 }

@@ -13,7 +13,7 @@
  	
  	<extension point="org.eclipse.ui.views">
      	<view
-             name="Package Explorer"
+             name="Package Explorer(废弃)"
              icon="icons/sample.gif"
              category="com.sl.view"
              class="com.sl.v0.views.View1"
@@ -34,7 +34,7 @@
              id="com.sl.v0.views.View3">
      	</view>
      	<view
-             name="Outline"
+             name="Outline(废弃)"
              icon="icons/sample.gif"
              category="com.sl.view"
              class="com.sl.v0.views.View4"

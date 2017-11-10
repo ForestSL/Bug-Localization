@@ -1,5 +1,5 @@
 package com.sl.v0.editors;
-
+/*·ÏÆú*/
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
