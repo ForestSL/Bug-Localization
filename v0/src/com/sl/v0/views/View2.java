@@ -84,26 +84,22 @@ public class View2 extends ViewPart {
             private EditorInput EditorInput = new EditorInput();
 
             public void mouseDoubleClick(MouseEvent e) {
-                // 根据不同列表项得到其相应的editorInput对象和editorID，其中
-                // editorID指该编辑器在plugin.xml文件中设置id标识值
-                Table table = (Table) e.getSource();// 由MouseEvent得到列表对象
-                
+                /* 根据不同列表项得到其相应的editorInput对象和editorID
+                 * 其中editorID指该编辑器在plugin.xml文件中设置id标识值*/
+                Table table = (Table) e.getSource();/*由MouseEvent得到列表对象*/
                 int row=table.getSelectionIndex();/*获取行*/
-                
-                System.out.println(row);
-                
-//                TableItem tableStr = table.getSelection()[0];// 得到当前列表项的字符
-//                System.out.println(tableStr);
+                String fileName=table.getItem(row).getText(0);/*获取行的第一个元素，即文件名*/
+                /*System.out.println(fileName);*/
                 
                 IEditorInput editorInput = null;
                 String editorID = null;
                 editorInput = EditorInput;
                 editorID = "com.sl.v0.editors.Editor";
               
-                // 如果editorInput或editorID为空则中断返回
+                /* 如果editorInput或editorID为空则中断返回*/
                 if (editorInput == null || editorID == null)
                     return;
-                // 取得IWorkbenchPage，并搜索使用editorInput对象对应的编辑器
+                /* 取得IWorkbenchPage，并搜索使用editorInput对象对应的编辑器*/
                 IWorkbenchPage workbenchPage = getViewSite().getPage();
                 IEditorPart editor = workbenchPage.findEditor(editorInput);
                 // 如果此编辑器已经存在，则将它设为当前的编辑器（最顶端），否则
@@ -117,19 +113,6 @@ public class View2 extends ViewPart {
                         e2.printStackTrace();
                     }
                 }
-            }
-        });
-        
-        /* 列表选择事件监听*/
-        table.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                // 由IWorkbenchPage获得view3对象
-                IWorkbenchPage wbp = getViewSite().getPage();
-                IViewPart view3 = wbp.findView("com.sl.v0.views.View3");
-                // 将当前选择的列表项显示在文本框中
-                Text text = ((View3) view3).getText();
-                //System.out.println(table.getSelection()[0]);
-                text.setText(table.getSelection()[0].toString());
             }
         });
         

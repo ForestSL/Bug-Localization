@@ -35,8 +35,16 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 	public void run(IAction action) {
 		
 		InputDialog1 input1=new InputDialog1();
+		
+		/*仿照流程*/
 		String sourcecode=input1.getcode();/*sourcecode为项目源代码网址*/
-		JOptionPane.showMessageDialog(null, sourcecode);
+		JOptionPane.showMessageDialog(null, "源代码"+sourcecode+"下载成功");
+		/*自动在eclipse中打开项目*/
+		
+		String report=input1.getreport();
+		JOptionPane.showMessageDialog(null, "bug报告"+report+"下载成功");
+		
+		JOptionPane.showMessageDialog(null, "开始bug定位……");
 		
 	}
 
