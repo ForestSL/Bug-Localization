@@ -8,6 +8,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.jface.dialogs.MessageDialog;
 
+import com.sl.v0.actions.panel.DownloadCode;
 import com.sl.v0.actions.panel.InputDialog1;
 
 /**
@@ -34,17 +35,23 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 	 */
 	public void run(IAction action) {
 		
+		Object[] options = {"项目代码下载","bug报告下载"};
+		int response=JOptionPane.showOptionDialog(null, "请用户选择所需操作：", "操作选择",JOptionPane.YES_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+		
 		InputDialog1 input1=new InputDialog1();
 		
-		/*仿照流程*/
-		String sourcecode=input1.getcode();/*sourcecode为项目源代码网址*/
-		JOptionPane.showMessageDialog(null, "源代码"+sourcecode+"下载成功");
-		/*自动在eclipse中打开项目*/
-		
-		String report=input1.getreport();
-		JOptionPane.showMessageDialog(null, "bug报告"+report+"下载成功");
-		
-		JOptionPane.showMessageDialog(null, "开始bug定位……");
+		if(response==0){
+			/*仿照流程*/
+			String sourcecode=input1.getcode();/*sourcecode为项目源代码网址*/
+			JOptionPane.showMessageDialog(null, "源代码"+sourcecode+"下载成功");
+			/*自动在eclipse中打开项目*/
+		}
+		if(response==1){
+			String report=input1.getreport();
+			JOptionPane.showMessageDialog(null, "bug报告"+report+"下载成功");
+		}
+		/*bug定位按钮单独拎出 不混杂在代码下载中*/
+		/*JOptionPane.showMessageDialog(null, "开始bug定位……");*/
 		
 	}
 

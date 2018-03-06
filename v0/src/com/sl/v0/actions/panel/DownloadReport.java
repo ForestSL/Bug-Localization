@@ -42,8 +42,6 @@ public class DownloadReport {
 	  
 	    }  
 	  
-	  
-	  
 	    /** 
 	     * 从输入流中获取字节数组 
 	     * @param inputStream 
@@ -61,9 +59,10 @@ public class DownloadReport {
 	        return bos.toByteArray();    
 	    }    
 	  
+	    /*测试用*/
 	    public static void main(String[] args) {  
 	        try{  
-	            downLoadFromUrl("http://ant.apache.org/bugs.html","BugReport","E:/test/");  
+	            downLoadFromUrl("https://bz.apache.org/bugzilla","BugReport","E:/bugtest/");  
 	        }catch (Exception e) {  
 	            // TODO: handle exception 
 	        	System.out.println("error");

@@ -12,9 +12,9 @@
 	<classpathentry kind="lib" path="lib/jna-3.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/sequence-library-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/sqljet-1.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/svnkit-1.7.4.jar"/>
 	<classpathentry kind="lib" path="lib/svnkit-cli-1.7.4.jar"/>
 	<classpathentry kind="lib" path="lib/svnkit-javahl16-1.7.4.jar"/>
 	<classpathentry kind="lib" path="lib/trilead-ssh2-1.0.0-build214.jar"/>
+	<classpathentry kind="lib" path="lib/svnkit-1.7.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
