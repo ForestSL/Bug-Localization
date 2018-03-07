@@ -1,43 +1,34 @@
 package com.sl.v0.views;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Frame;
-import java.awt.ScrollPane;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.RootPaneContainer;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableModel;
-
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.awt.SWT_AWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.eclipse.ui.part.ViewPart;
 
-import com.sl.v0.editors.EditorInput;
-import com.sl.v0.views.ColumnSort.MyTableModel;
-
 public class View2 extends ViewPart {
 	
-	      
+    private void createActions() {
+    	/*添加工具栏操作*/
+    	
+    }
+    
+    private void initializeToolBar() {
+        IToolBarManager tbm=getViewSite().getActionBars().getToolBarManager();
+    }
+    private void initializeMenu() {
+        IMenuManager manager =getViewSite().getActionBars().getMenuManager();
+    }
+	
+	
 //    private Table table;
 //    
 //    /*测试数据，模拟bug分析后的数据*/
@@ -48,20 +39,189 @@ public class View2 extends ViewPart {
 //    		{"d.java","10","3","100","34","66"}};
 	
     public void createPartControl(Composite parent) {
-        //IWorkbenchHelpSystem help = PlatformUI.getWorkbench().getHelpSystem();
-        //help.setHelp(parent, "com.sl.v0.buttonHelpId");
+        IWorkbenchHelpSystem help = PlatformUI.getWorkbench().getHelpSystem();
+        help.setHelp(parent, "com.sl.v0.buttonHelpId");
         Composite topComp = new Composite(parent, SWT.NONE);
         topComp.setLayout(new FillLayout());
         
-        /*新写法测试*/
-        JFrame f = new JFrame("ColumnModelTest");
-        f.setLocation(500, 500);
-        f.setSize(100,10);
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.getContentPane().add(new ColumnSort(), BorderLayout.CENTER);
-        f.pack();
-        f.setVisible(true);
-
+        /*添加工具栏：定位方法勾选*/
+//        createActions();
+//        initializeToolBar();
+//        initializeMenu(); 
+        
+        
+        /*新写法3*/
+        Table table = new Table(topComp,  SWT.BORDER);  
+        table.setHeaderVisible(true);
+        table.setLinesVisible(true);
+        
+        String columns[] = { "文件", "VSM", "LSI", "NGD", "PMI", "JSM" };
+        for(int i=0;i<columns.length;i++){
+        	TableColumn tc = new TableColumn(table, SWT.CENTER);
+        	tc.setText(columns[i]);
+        	tc.setWidth(100);//设置列宽  
+            tc.setResizable(false);//设置列宽不能改变
+        }
+        
+        Object objs[][] = {
+        	{
+        		"a.java", "60", "1", "103", "25", "55"
+        	}, {
+        		"b.java", "30", "2", "102", "35", "56"
+        	}, {
+        		"c.java", "50", "4", "101", "14", "67"
+        	}, {
+        		"d.java", "10", "3", "100", "34", "66"
+        	} 
+        };
+        TableItem item = null;  
+        for (int row = 0; row < objs.length; row++) {   
+        	item = new TableItem(table, SWT.NONE);   
+        	item.setText(0, row + 1 + "");   
+        	for (int col = 0; col < table.getColumnCount() ; col++) {    
+        		if (objs[row][col] != null)     
+        			item.setText(col, objs[row][col].toString());          		
+        	}
+        }
+        
+        int[] flag={0,0,0,0,0,0};/*标记当前列排序状态，1：正序 0：未排序 -1：倒序*/
+        /*循环写法报错，关于调用排序时i的问题*/
+//        for(int i=0;i<columns.length;i++){
+//        	table.getColumn(i).addSelectionListener(new SelectionAdapter(){
+//            	public void widgetSelected(SelectionEvent e){
+//            		//调用排序文件，处理排序
+//            		int cur=flag[i];/*记录当前列标记*/
+//            		for(int i=0;i<flag.length;i++)
+//            			flag[i]=0;/*清空其他列标记*/
+//            		if(cur==0||cur==-1){/*未排序或为倒序*/
+//            			new TableColumnSorter().addSorter(table, table.getColumn(i));
+//            			flag[i]=1;
+//            		}else{/*为正序*/
+//            			new TableColumnSorter().removeSorter(table, table.getColumn(i));
+//            			flag[i]=-1;
+//            		}
+//            	}
+//            });
+//        }
+        
+        
+        table.getColumn(0).addSelectionListener(new SelectionAdapter(){
+        	public void widgetSelected(SelectionEvent e){
+        		//调用排序文件，处理排序
+        		int cur=flag[0];/*记录当前列标记*/
+        		for(int i=0;i<flag.length;i++)
+        			flag[i]=0;/*清空其他列标记*/
+        		if(cur==0||cur==-1){/*未排序或为倒序*/
+        			new TableColumnSorter().addSorter(table, table.getColumn(0));
+        			flag[0]=1;
+        		}else{/*为正序*/
+        			new TableColumnSorter().removeSorter(table, table.getColumn(0));
+        			flag[0]=-1;
+        		}
+        	}
+        });
+        table.getColumn(1).addSelectionListener(new SelectionAdapter(){
+        	public void widgetSelected(SelectionEvent e){
+        		//调用排序文件，处理排序
+        		int cur=flag[1];/*记录当前列标记*/
+        		for(int i=0;i<flag.length;i++)
+        			flag[i]=0;/*清空其他列标记*/
+        		if(cur==0||cur==-1){/*未排序或为倒序*/
+        			new TableColumnSorter().addSorter(table, table.getColumn(1));
+        			flag[1]=1;
+        		}else{/*为正序*/
+        			new TableColumnSorter().removeSorter(table, table.getColumn(1));
+        			flag[1]=-1;
+        		}
+        	}
+        });
+        table.getColumn(2).addSelectionListener(new SelectionAdapter(){
+        	public void widgetSelected(SelectionEvent e){
+        		//调用排序文件，处理排序
+        		int cur=flag[2];/*记录当前列标记*/
+        		for(int i=0;i<flag.length;i++)
+        			flag[i]=0;/*清空其他列标记*/
+        		if(cur==0||cur==-1){/*未排序或为倒序*/
+        			new TableColumnSorter().addSorter(table, table.getColumn(2));
+        			flag[2]=1;
+        		}else{/*为正序*/
+        			new TableColumnSorter().removeSorter(table, table.getColumn(2));
+        			flag[2]=-1;
+        		}
+        	}
+        });
+        table.getColumn(3).addSelectionListener(new SelectionAdapter(){
+        	public void widgetSelected(SelectionEvent e){
+        		//调用排序文件，处理排序
+        		int cur=flag[3];/*记录当前列标记*/
+        		for(int i=0;i<flag.length;i++)
+        			flag[i]=0;/*清空其他列标记*/
+        		if(cur==0||cur==-1){/*未排序或为倒序*/
+        			new TableColumnSorter().addSorter(table, table.getColumn(3));
+        			flag[3]=1;
+        		}else{/*为正序*/
+        			new TableColumnSorter().removeSorter(table, table.getColumn(3));
+        			flag[3]=-1;
+        		}
+        	}
+        });
+        table.getColumn(4).addSelectionListener(new SelectionAdapter(){
+        	public void widgetSelected(SelectionEvent e){
+        		//调用排序文件，处理排序
+        		int cur=flag[4];/*记录当前列标记*/
+        		for(int i=0;i<flag.length;i++)
+        			flag[i]=0;/*清空其他列标记*/
+        		if(cur==0||cur==-1){/*未排序或为倒序*/
+        			new TableColumnSorter().addSorter(table, table.getColumn(4));
+        			flag[4]=1;
+        		}else{/*为正序*/
+        			new TableColumnSorter().removeSorter(table, table.getColumn(4));
+        			flag[4]=-1;
+        		}
+        	}
+        });
+        table.getColumn(5).addSelectionListener(new SelectionAdapter(){
+        	public void widgetSelected(SelectionEvent e){
+        		//调用排序文件，处理排序
+        		int cur=flag[5];/*记录当前列标记*/
+        		for(int i=0;i<flag.length;i++)
+        			flag[i]=0;/*清空其他列标记*/
+        		if(cur==0||cur==-1){/*未排序或为倒序*/
+        			new TableColumnSorter().addSorter(table, table.getColumn(5));
+        			flag[5]=1;
+        		}else{/*为正序*/
+        			new TableColumnSorter().removeSorter(table, table.getColumn(5));
+        			flag[5]=-1;
+        		}
+        	}
+        });
+        
+        
+        /*新写法2*/
+//        JFrame jf = new JFrame("排序测试");
+//        jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        /*表格中显示的数据*/
+//        Object rows[][] = {
+//        		{
+//        			"a.java", "60", "1", "103", "25", "55"
+//        		}, {
+//        			"b.java", "30", "2", "102", "35", "56"
+//        		}, {
+//        			"c.java", "50", "4", "101", "14", "67"
+//        		}, {
+//        			"d.java", "10", "3", "100", "34", "66"
+//        		} 
+//        };
+//        String columns[] = { "文件", "VSM", "LSI", "NGD", "PMI", "JSM" };
+//        TableModel model = new DefaultTableModel(rows, columns);
+//        JTable table = new JTable(model);
+//        RowSorter sorter = new TableRowSorter(model);
+//        table.setRowSorter(sorter);
+//        JScrollPane pane = new JScrollPane(table);
+//        jf.add(pane, BorderLayout.CENTER);
+//        jf.setSize(300, 150);
+//        jf.setVisible(true);
+        
 
 //        table=new Table(topComp,SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
 //        table.setHeaderVisible(true);/*设置表头可见*/

@@ -1,5 +1,5 @@
 package com.sl.v0.views;
-
+/*·ÏÆú*/
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
