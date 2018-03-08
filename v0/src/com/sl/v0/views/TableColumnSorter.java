@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.*;
  
 public class TableColumnSorter { 
 	
+	/*table…˝–Ú≈≈¡–*/
 	public static void addSorter(final Table table, final TableColumn column) {  
         column.addListener(SWT.Selection, new Listener() {  
             boolean isAscend = true;/*…˝–Ú*/  
@@ -42,6 +43,7 @@ public class TableColumnSorter {
         });  
     }  
 	
+	/*tableΩµ–Ú≈≈¡–*/
 	public static void removeSorter(final Table table, final TableColumn column) {  
         column.addListener(SWT.Selection, new Listener() {  
             boolean isAscend = false;/*Ωµ–Ú*/  
