@@ -20,14 +20,14 @@
              id="com.sl.v0.views.View1">
      	</view>
      	<view
-             name="文件排序区"
+             name="bug定位结果"
              icon="icons/sample.gif"
              category="com.sl.view"
              class="com.sl.v0.views.View2"
              id="com.sl.v0.views.View2">
      	</view>
      	<view
-             name="bug展示区"
+             name="bug详细报告"
              icon="icons/sample.gif"
              category="com.sl.view"
              class="com.sl.v0.views.View3"
@@ -41,15 +41,6 @@
              id="com.sl.v0.views.View4">
      	</view>
  	</extension>
- 	
- 	<extension point="org.eclipse.ui.editors">
-  		<editor 
-        	name="SL_Editor"
-        	icon="icons/sample.gif"
-        	class="com.sl.v0.editors.Editor"
-        	id="com.sl.v0.editors.Editor">
-  		</editor>
-  	</extension>
 
    	<extension
          point="org.eclipse.ui.actionSets">

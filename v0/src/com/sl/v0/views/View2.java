@@ -2,21 +2,31 @@ package com.sl.v0.views;
 
 /*bug定位table表格展示视图*/
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TableCursor;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -26,6 +36,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.eclipse.ui.part.ViewPart;
@@ -33,8 +49,11 @@ import org.eclipse.ui.part.ViewPart;
 import com.sl.v0.datas.Choice;
 import com.sl.v0.datas.GlobalVar;
 import com.sl.v0.datas.TableCell;
+import com.sl.v0.datas.TableCellModel;
+import com.sl.v0.swt.SWTResourceManager;
+import com.sl.v0.editors.*;
 
-public class View2 extends ViewPart{
+public class View2 extends ViewPart {
 	
     /*表格开发测试用数据*/
     String columns[] = { "文件", "VSM", "LSI", "JSM", "NGD", "PMI" };/*扩展时注意排序部分*/
@@ -47,8 +66,21 @@ public class View2 extends ViewPart{
         		"c.java", "50", "4", "101", "14", "67"
         	}, {
         		"d.java", "10", "3", "100", "34", "66"
+        	}, {
+        		"e.java", "200", "6", "102", "35", "56"
+        	}, {
+        		"f.java", "40", "10", "101", "14", "67"
+        	}, {
+        		"g.java", "100", "5", "100", "34", "66"
         	} 
         };
+    
+    /*视图间消息传递*/
+    private ISelection selection;
+    ArrayList myListeners = new ArrayList();
+    ListViewer listViewer;
+    
+    public View2(){}
 	
     Table table;
 	private Choice choice=new Choice();
@@ -109,10 +141,14 @@ public class View2 extends ViewPart{
     }
 	
     public void createPartControl(Composite parent) {
+    	    	
         IWorkbenchHelpSystem help = PlatformUI.getWorkbench().getHelpSystem();
         help.setHelp(parent, "com.sl.v0.buttonHelpId");
         Composite topComp = new Composite(parent, SWT.NONE);
-        topComp.setLayout(new FillLayout());
+        /*格式布局*/
+        RowLayout rowLayout = new RowLayout();
+        rowLayout.type=SWT.VERTICAL; 
+        topComp.setLayout(rowLayout);
         
         /*添加工具栏：定位方法勾选*/
         createActions();
@@ -123,6 +159,7 @@ public class View2 extends ViewPart{
         table = new Table(topComp,  SWT.BORDER);  
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
+        table.setLayoutData(new RowData(600, 100));  
         
         /*初始化表格*/
         /*第一列无须考虑勾选情况*/
@@ -141,6 +178,13 @@ public class View2 extends ViewPart{
         		tc.setWidth(0);/*隐藏为勾选的列*/
             tc.setResizable(false);//设置列宽不能改变
         }
+        
+        /*视图间消息传递(多加一个视图，因为无法在table上监听)*/
+    	listViewer = new ListViewer(topComp,SWT.BORDER);
+    	listViewer.setLabelProvider(new View3LabelProvider());
+    	listViewer.setContentProvider(new View3ContentProvider());
+    	listViewer.setInput(new TableCellModel());    	
+    	this.getSite().setSelectionProvider(listViewer);
         
         /*排序操作*/
         int[] flag={0,0,0,0,0,0};/*标记当前列排序状态，1：正序 0：未排序 -1：倒序*/
@@ -163,21 +207,6 @@ public class View2 extends ViewPart{
 //            });
 //        }
                
-        table.getColumn(0).addSelectionListener(new SelectionAdapter(){
-        	public void widgetSelected(SelectionEvent e){
-        		//调用排序文件，处理排序
-        		int cur=flag[0];/*记录当前列标记*/
-        		for(int i=0;i<flag.length;i++)
-        			flag[i]=0;/*清空其他列标记*/
-        		if(cur==0||cur==-1){/*未排序或为倒序*/
-        			new TableColumnSorter().addSorter(table, table.getColumn(0));
-        			flag[0]=1;
-        		}else{/*为正序*/
-        			new TableColumnSorter().removeSorter(table, table.getColumn(0));
-        			flag[0]=-1;
-        		}
-        	}
-        });
         table.getColumn(1).addSelectionListener(new SelectionAdapter(){
         	public void widgetSelected(SelectionEvent e){
         		//调用排序文件，处理排序
@@ -256,11 +285,16 @@ public class View2 extends ViewPart{
         /*排序操作结束*/
         
 
-        /*单机显示具体bug信息*/
+        /*鼠标单击事件：显示具体bug信息*/
+        //final TableCursor cursor = new TableCursor(table, SWT.NONE);
         table.addMouseListener(new MouseAdapter(){
         	@Override
-            public void mouseDoubleClick(MouseEvent e) {
-        		boolean b = false;
+            public void mouseDown(MouseEvent e) {
+        		
+//        		int i = table.getSelectionIndex();
+//        		int j = cursor.getColumn();
+//        		//System.out.println(i+" "+j);
+        		
         		/*获得单元格的位置*/
         		TableItem[] items = table.getItems();
         		Point pt = new Point(e.x, e.y);
@@ -278,8 +312,13 @@ public class View2 extends ViewPart{
         					String data = item.getText(j);
         					GlobalVar.cell.setCount(data);
         	
-        					System.out.println("此处详细展示"+file+"文件通过"+method+"方法定位的bug结果,bug数为"+data );
+        					//System.out.println("此处详细展示"+file+"文件通过"+method+"方法定位的bug结果,bug数为"+data );
         				
+        					/*更新选中值*/
+        					listViewer.setInput(new TableCellModel());  
+        					
+        					/*设置选中单元格背景色*/
+        					//item.setBackground(j,SWTResourceManager.getColor(SWT.COLOR_BLUE));
         				}
         			}
         		}
@@ -287,44 +326,39 @@ public class View2 extends ViewPart{
         	}
         });
         
-//        /*鼠标点击事件监听*/
-//        table.addMouseListener(new MouseAdapter() {
-//            private EditorInput EditorInput = new EditorInput();
-//
-//            public void mouseDoubleClick(MouseEvent e) {
-//                /* 根据不同列表项得到其相应的editorInput对象和editorID
-//                 * 其中editorID指该编辑器在plugin.xml文件中设置id标识值*/
-//                Table table = (Table) e.getSource();/*由MouseEvent得到列表对象*/
-//                int row=table.getSelectionIndex();/*获取行*/
-//                String fileName=table.getItem(row).getText(0);/*获取行的第一个元素，即文件名*/
-//                /*System.out.println(fileName);*/
-//                
-//                IEditorInput editorInput = null;
-//                String editorID = null;
-//                editorInput = EditorInput;
-//                editorID = "com.sl.v0.editors.Editor";
-//              
-//                /* 如果editorInput或editorID为空则中断返回*/
-//                if (editorInput == null || editorID == null)
-//                    return;
-//                /* 取得IWorkbenchPage，并搜索使用editorInput对象对应的编辑器*/
-//                IWorkbenchPage workbenchPage = getViewSite().getPage();
-//                IEditorPart editor = workbenchPage.findEditor(editorInput);
-//                // 如果此编辑器已经存在，则将它设为当前的编辑器（最顶端），否则
-//                // 重新打开一个编辑器
-//                if (editor != null) {
-//                    workbenchPage.bringToTop(editor);
-//                } else {
-//                    try {
-//                        workbenchPage.openEditor(editorInput, editorID);
-//                    } catch (PartInitException e2) {
-//                        e2.printStackTrace();
-//                    }
-//                }
-//            }
-//        });
+        /*鼠标双击事件：编辑器打开文件*/
+        table.addMouseListener(new MouseAdapter() {
+
+            public void mouseDoubleClick(MouseEvent e) {
+                /* 根据不同列表项得到其相应的editorInput对象和editorID
+                 * 其中editorID指该编辑器在plugin.xml文件中设置id标识值*/
+            	
+            	//String filename=null;
+            	/*获得单元格的位置*/
+        		TableItem[] items = table.getItems();
+        		Point pt = new Point(e.x, e.y);
+        		for (int i = 0; i < items.length; i++) {
+        			for (int j = 0; j < table.getColumnCount(); j++) {
+        				Rectangle rect = items[i].getBounds(j);
+        				if (rect.contains(pt)) {
+        					/*获取行名（文件名）*/
+        					TableItem item = table.getItem(i);
+        					GlobalVar.filename = item.getText(0);/*由于行排序后变化，所以每次取指定行第一个单元格数据*/       				
+        				}
+        			}
+        		}
+        		
+        		//System.out.println(GlobalVar.filename);
+                
+                /*TODO:根据文件名在编辑器中打开*/
+        		
+        		
+            }
+        });
         
     }
+    
+    
     @Override
     public void setFocus() {}
     
@@ -403,21 +437,6 @@ public class View2 extends ViewPart{
             
             /*添加排序操作（尝试封装函数，但是功能失效）*/
             int[] flag={0,0,0,0,0,0};
-            table.getColumn(0).addSelectionListener(new SelectionAdapter(){
-            	public void widgetSelected(SelectionEvent e){
-            		//调用排序文件，处理排序
-            		int cur=flag[0];/*记录当前列标记*/
-            		for(int i=0;i<flag.length;i++)
-            			flag[i]=0;/*清空其他列标记*/
-            		if(cur==0||cur==-1){/*未排序或为倒序*/
-            			new TableColumnSorter().addSorter(table, table.getColumn(0));
-            			flag[0]=1;
-            		}else{/*为正序*/
-            			new TableColumnSorter().removeSorter(table, table.getColumn(0));
-            			flag[0]=-1;
-            		}
-            	}
-            });
             table.getColumn(1).addSelectionListener(new SelectionAdapter(){
             	public void widgetSelected(SelectionEvent e){
             		//调用排序文件，处理排序
@@ -498,5 +517,6 @@ public class View2 extends ViewPart{
             super.buttonPressed(buttonId);
         }
     }
+
     
 }

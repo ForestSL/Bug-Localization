@@ -16,5 +16,6 @@
 	<classpathentry kind="lib" path="lib/svnkit-javahl16-1.7.4.jar"/>
 	<classpathentry kind="lib" path="lib/trilead-ssh2-1.0.0-build214.jar"/>
 	<classpathentry kind="lib" path="lib/svnkit-1.7.4.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.resources.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

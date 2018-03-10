@@ -4,6 +4,7 @@ import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 
+import com.sl.v0.datas.GlobalVar;
 import com.sl.v0.views.View2;
 import com.sl.v0.views.View3;
 
@@ -14,6 +15,7 @@ public class SamplePerspective implements IPerspectiveFactory {
     	
         /*得到本透视图的编辑空间标识*/
         String editorArea = layout.getEditorArea();
+        //GlobalVar.editorArea=editorArea;
         
         /*在透视图左部创建一个空间，并将PackageExplorer放入其中。*/
         IFolderLayout left = layout.createFolder("left", IPageLayout.LEFT, 0.15f, editorArea);
