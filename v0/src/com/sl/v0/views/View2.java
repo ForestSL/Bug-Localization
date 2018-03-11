@@ -6,9 +6,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
@@ -54,26 +51,6 @@ import com.sl.v0.swt.SWTResourceManager;
 import com.sl.v0.editors.*;
 
 public class View2 extends ViewPart {
-	
-    /*表格开发测试用数据*/
-    String columns[] = { "文件", "VSM", "LSI", "JSM", "NGD", "PMI" };/*扩展时注意排序部分*/
-    Object objs[][] = {
-        	{
-        		"a.java", "60", "1", "103", "25", "55"
-        	}, {
-        		"b.java", "30", "2", "102", "35", "56"
-        	}, {
-        		"c.java", "50", "4", "101", "14", "67"
-        	}, {
-        		"d.java", "10", "3", "100", "34", "66"
-        	}, {
-        		"e.java", "200", "6", "102", "35", "56"
-        	}, {
-        		"f.java", "40", "10", "101", "14", "67"
-        	}, {
-        		"g.java", "100", "5", "100", "34", "66"
-        	} 
-        };
     
     /*视图间消息传递*/
     private ISelection selection;
@@ -109,17 +86,17 @@ public class View2 extends ViewPart {
     		public void run() {
 				MessageDialog.openInformation(getSite().getShell(), "Run", "Bug Location Running……");
     			
-				/*TODO:bug定位运行操作,获取定位后的数据*/
+				/*TODO:bug定位运行操作 更新全局变量中table数据*/
 				
 				/*运行填充数据到表格*/
 				table.removeAll();
 		        TableItem item = null;  
-		        for (int row = 0; row < objs.length; row++) {   
+		        for (int row = 0; row < GlobalVar.objs.length; row++) {   
 		        	item = new TableItem(table, SWT.NONE);   
 		        	item.setText(0, row + 1 + "");   
 		        	for (int col = 0; col < table.getColumnCount() ; col++) {    
-		        		if (objs[row][col] != null)     
-		        			item.setText(col, objs[row][col].toString());          		
+		        		if (GlobalVar.objs[row][col] != null)     
+		        			item.setText(col, GlobalVar.objs[row][col].toString());          		
 		        	}
 		        }
     		
@@ -164,13 +141,13 @@ public class View2 extends ViewPart {
         /*初始化表格*/
         /*第一列无须考虑勾选情况*/
         TableColumn t = new TableColumn(table, SWT.CENTER);
-    	t.setText(columns[0]);
+    	t.setText(GlobalVar.columns[0]);
     	t.setWidth(100);
         t.setResizable(false);//设置列宽不能改变       
         /*根据勾选情况创建其他列*/
-        for(int i=1;i<columns.length;i++){
+        for(int i=1;i<GlobalVar.columns.length;i++){
         	TableColumn tc = new TableColumn(table, SWT.CENTER);
-        	tc.setText(columns[i]);      	
+        	tc.setText(GlobalVar.columns[i]);      	
         	/*获取bug方法勾选情况*/
         	if(choice.methodChoice(i-1)==true)
         		tc.setWidth(100);/*设置列宽*/  
@@ -303,7 +280,7 @@ public class View2 extends ViewPart {
         				Rectangle rect = items[i].getBounds(j);
         				if (rect.contains(pt)) {
         					/*获取列名（方法名）*/
-        					String method=columns[j];
+        					String method=GlobalVar.columns[j];
         					GlobalVar.cell.setMethod(method);
         					/*获取行名（文件名）*/
         					TableItem item = table.getItem(i);
@@ -418,13 +395,13 @@ public class View2 extends ViewPart {
             
             /*第一列无须考虑勾选情况*/
             TableColumn t = new TableColumn(table, SWT.CENTER);
-        	t.setText(columns[0]);
+        	t.setText(GlobalVar.columns[0]);
         	t.setWidth(100);
             t.setResizable(false);//设置列宽不能改变            
             /*根据勾选情况创建其他列*/
-            for(int i=1;i<columns.length;i++){
+            for(int i=1;i<GlobalVar.columns.length;i++){
             	TableColumn tc = new TableColumn(table, SWT.CENTER);
-            	tc.setText(columns[i]);
+            	tc.setText(GlobalVar.columns[i]);
             	
             	/*获取bug方法勾选情况*/
             	if(choice.methodChoice(i-1)==true)

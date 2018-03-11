@@ -9,64 +9,36 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class DownloadReport {
-
-	 public static void  downLoadFromUrl(String urlStr,String fileName,String savePath) throws IOException{  
-	        URL url = new URL(urlStr);    
-	        HttpURLConnection conn = (HttpURLConnection)url.openConnection();    
-	        //设置超时间为3秒  
-	        conn.setConnectTimeout(3*1000);  
-	        //防止屏蔽程序抓取而返回403错误  
-	        conn.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)");  
+	
+	public static String openHtml(String url){
+		HttpURLConnection conn = null;
+		try {
+		    URL realUrl = new URL(url);
+		    conn = (HttpURLConnection) realUrl.openConnection();
+		    //设置post方法
+            conn.setRequestMethod("POST");
+            //不使用缓存
+            conn.setUseCaches(false);
+            // 发送POST请求必须设置如下两行
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            //读取超时时间
+            conn.setReadTimeout(8000);
+            //连接超时时间
+            conn.setConnectTimeout(8000);
+            //这一句很重要，设置不要302自动跳转，后面会讲解到
+            conn.setInstanceFollowRedirects(false);
+		    return "success";
+		}catch (Exception e) {
+		    //Url出错
+			return "failed";
+		}
+	}
 	  
-	        //得到输入流  
-	        InputStream inputStream = conn.getInputStream();    
-	        //获取自己数组  
-	        byte[] getData = readInputStream(inputStream);      
-	  
-	        //文件保存位置  
-	        File saveDir = new File(savePath);  
-	        if(!saveDir.exists()){  
-	            saveDir.mkdir();  
-	        }  
-	        File file = new File(saveDir+File.separator+fileName);      
-	        FileOutputStream fos = new FileOutputStream(file);       
-	        fos.write(getData);   
-	        if(fos!=null){  
-	            fos.close();    
-	        }  
-	        if(inputStream!=null){  
-	            inputStream.close();  
-	        }  
-	  
-	        System.out.println("info:"+url+" download success");   
-	  
-	    }  
-	  
-	    /** 
-	     * 从输入流中获取字节数组 
-	     * @param inputStream 
-	     * @return 
-	     * @throws IOException 
-	     */  
-	    public static byte[] readInputStream(InputStream inputStream) throws IOException{    
-	        byte[] buffer = new byte[1024];    
-	        int len = 0;    
-	        ByteArrayOutputStream bos = new ByteArrayOutputStream();    
-	        while((len = inputStream.read(buffer)) != -1) {    
-	            bos.write(buffer, 0, len);    
-	        }    
-	        bos.close();    
-	        return bos.toByteArray();    
-	    }    
-	  
-	    /*测试用*/
-	    public static void main(String[] args) {  
-	        try{  
-	            downLoadFromUrl("https://bz.apache.org/bugzilla","BugReport","E:/bugtest/");  
-	        }catch (Exception e) {  
-	            // TODO: handle exception 
-	        	System.out.println("error");
-	        }  
-	    }  
+	/*测试用*/
+	public static void main(String[] args) {  
+		String openStatus=openHtml("https://issues.apache.org/jira/projects/CXF");
+		System.out.println(openStatus);
+	}  
 	
 }

@@ -43,7 +43,7 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 		if(response==0){
 			/*仿照流程*/
 			String sourcecode=input1.getcode();/*sourcecode为项目源代码网址*/
-			JOptionPane.showMessageDialog(null, "源代码"+sourcecode+"下载成功");
+			//JOptionPane.showMessageDialog(null, "源代码"+sourcecode+"下载成功");
 			/*自动在eclipse中打开项目*/
 		}
 		if(response==1){
