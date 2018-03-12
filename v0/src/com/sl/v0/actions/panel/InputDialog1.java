@@ -21,23 +21,32 @@ public class InputDialog1 {
 		/*根据项目网址返回版本列表*/
 		//Object[] versions ={ "v1.0.0", "v1.0.1", "v2.0.0" };  
 		Object[] versions=new DownloadCode().getHistoryInfo(sourcecode);
-		String version = (String) JOptionPane.showInputDialog(
+		/*能获取到版本列表*/
+		if(versions.length>1){	
+			String version = (String) JOptionPane.showInputDialog(
 				null,"请选择要下载的版本:\n", "项目版本", JOptionPane.PLAIN_MESSAGE, new ImageIcon("icon.png"), versions,"");
 		
-		/*TODO:代码下载目录问题待修改*/
-		
-		/*github项目代码下载*/
-		String localPath = "E://GitTest";
-		String result=(new DownloadCode()).cloneRepository(sourcecode,localPath,version);
-		
-		if(result.compareTo("success")==0){
-			JOptionPane.showMessageDialog(null, "项目"+version+"下载成功！");
+			if(version!=null){
+				/*github项目代码下载*/
+				String localPath = "E://GithubCode";
+				String result=(new DownloadCode()).cloneRepository(sourcecode,localPath,version);
+				if(result.compareTo("success")==0){
+					JOptionPane.showMessageDialog(null, "项目"+version+"获取成功！");
 			
-			/*TODO:自动在eclipse中打开代码*/
-			
+					/*TODO:自动在eclipse中打开代码*/
+				
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "项目"+version+"获取失败！请重试。");
+				}
+			}
+			else{
+				JOptionPane.showMessageDialog(null, "请重新输入项目地址并选择版本！");/*未选择版本*/
+			}
 		}
-		else
-			JOptionPane.showMessageDialog(null, "项目"+version+"下载失败！请重试。");
+		else{
+			JOptionPane.showMessageDialog(null, "请重新输入正确项目地址！");/*地址错误*/
+		}
 		
 		/*svn项目代码下载（暂时不考虑）*/
 		/*同上：调用checkoutRepository()即可*/

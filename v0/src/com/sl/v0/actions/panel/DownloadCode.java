@@ -36,37 +36,46 @@ public class DownloadCode {
                 cur=cur+sversion+" ";
             }           
 		} catch (InvalidRemoteException e) {
-			// TODO 自动生成的 catch 块
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null,"项目获取出错，请重试！");
 		} catch (TransportException e) {
-			// TODO 自动生成的 catch 块
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null,"项目获取出错，请重试！");
 		} catch (GitAPIException e) {
-			// TODO 自动生成的 catch 块
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null,"项目获取出错，请重试！");
 		}
 		
 		String[] cur2=cur.split(" ");
 		Object[] version=new Object[cur2.length];/*截取存储在object对象*/
 		for(int i=0;i<cur2.length;i++){
 			version[i]=cur2[i];
-			System.out.println(version[i]);
+			//System.out.println(version[i]);/*测试用：输出版本列表*/
 		}
 		
 		return version;
     } 
 	
 	/*指定版本号进行github代码下载*/
-	public static String cloneRepository(String REMOTE_URL,String localPath,String version){
+	public static String cloneRepository(String url,String localPath,String version){
 		try{
-			System.out.println("开始下载......");
-			JOptionPane.showMessageDialog(null,"项目正在下载中……");/*带确认键？？？*/
+			String[] urlPath=url.split("/");
+			String file=urlPath[urlPath.length-1];
+			String path=localPath+"/"+file+"/"+version;
 			
-			String url=REMOTE_URL;
-			CloneCommand cc = Git.cloneRepository();
-			Git git=cc.setURI(url).setBranch(version).setDirectory(new File(localPath)).call();
+			File dir =new File(path);    
+			/*判断项目文件是否存在*/
+			if(!dir.exists()&&!dir.isDirectory()){   
+				System.out.println("开始下载......");
+				JOptionPane.showMessageDialog(null,"开始进行下载……");
+			    CloneCommand cc = Git.cloneRepository();
+				Git git=cc.setURI(url).setBranch(version).setDirectory(dir).call();
+				System.out.println("下载完成......");
+			}else{  
+			    System.out.println("该项目已存在");
+			    JOptionPane.showMessageDialog(null,"该版本项目代码已存在！");
+			}  
 			
-			System.out.println("下载完成......");
 			return "success";
 		}catch(Exception e){
 		   e.printStackTrace();
@@ -113,25 +122,24 @@ public class DownloadCode {
 //			System.out.println("把版本："+workingVersion+" check out 到目录："+wcDir+"中。");
 //			return "success";
 //		} catch (SVNException e) {
-//			// TODO 自动生成的 catch 块
 //			e.printStackTrace();
 //			return "error";
 //		}
 //	}
 	
 	/*自测github&svn代码下载功能*/
-	public static void main(String[] args){
-		String REMOTE_URL = "https://gitbox.apache.org/repos/asf/cxf.git";
-		getHistoryInfo(REMOTE_URL);
-		
-		String version="cxf-2.7.10";
-		String localPath = "E://GitTest2";
-		//cloneRepository(REMOTE_URL,localPath,version);
-		
-	  
-//		String localPath2 = "E://SvnTest2";
-//		String url2 = "http://svn.apache.org/repos/asf/ant/site/";
-////		checkoutRepository(url2,localPath2);
-	}
+//	public static void main(String[] args){
+//		String REMOTE_URL = "https://gitbox.apache.org/repos/asf/cxf.git";
+//		getHistoryInfo(REMOTE_URL);
+//		
+//		String version="cxf-2.7.10";
+//		String localPath = "E://GitTest2";
+//		//cloneRepository(REMOTE_URL,localPath,version);
+//		
+//	  
+////		String localPath2 = "E://SvnTest2";
+////		String url2 = "http://svn.apache.org/repos/asf/ant/site/";
+//////		checkoutRepository(url2,localPath2);
+//	}
 
 }
