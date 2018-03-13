@@ -48,7 +48,7 @@ public class SampleAction implements IWorkbenchWindowActionDelegate {
 		}
 		if(response==1){
 			String report=input1.getreport();
-			JOptionPane.showMessageDialog(null, "bug报告"+report+"下载成功");
+			//JOptionPane.showMessageDialog(null, "bug报告"+report+"下载成功");
 		}
 		/*bug定位按钮单独拎出 不混杂在代码下载中*/
 		/*JOptionPane.showMessageDialog(null, "开始bug定位……");*/

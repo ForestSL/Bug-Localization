@@ -60,7 +60,19 @@ public class InputDialog1 {
 		String report = JOptionPane.showInputDialog(  
 	      "输入bug数据库网址：");
 		
-		/*TODO:bug报告下载*/
+		String localPath = "E://BugReport";
+		report.replace(" ", "");
+
+		/*判断是否输入网址*/
+		if(!report.equals("")&&report!=null){
+			String re=(new DownloadReport()).DownloadReport(report,localPath);
+			if(re=="success")
+				JOptionPane.showMessageDialog(null, "bug报告获取成功！");
+			else
+				JOptionPane.showMessageDialog(null, "请重试！");
+		}else{
+			JOptionPane.showMessageDialog(null, "请输入bug数据库网址！");
+		}
 		
 		return report;
 	}
