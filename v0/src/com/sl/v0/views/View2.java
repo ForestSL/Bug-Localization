@@ -3,8 +3,10 @@ package com.sl.v0.views;
 /*bug定位table表格展示视图*/
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
@@ -43,6 +45,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.eclipse.ui.part.ViewPart;
 
+import com.sl.v0.buglocation.DataCreator;
 import com.sl.v0.datas.Choice;
 import com.sl.v0.datas.GlobalVar;
 import com.sl.v0.datas.TableCell;
@@ -87,6 +90,7 @@ public class View2 extends ViewPart {
 				MessageDialog.openInformation(getSite().getShell(), "Run", "Bug Location Running……");
     			
 				/*TODO:bug定位运行操作 更新全局变量中table数据*/
+				//List<File> fileList=(new DataCreator()).GetFiles("E:\\GithubCode\\cxf.git\\cxf-3.1.0");
 				
 				/*运行填充数据到表格*/
 				table.removeAll();
@@ -142,7 +146,7 @@ public class View2 extends ViewPart {
         /*第一列无须考虑勾选情况*/
         TableColumn t = new TableColumn(table, SWT.CENTER);
     	t.setText(GlobalVar.columns[0]);
-    	t.setWidth(100);
+    	t.setWidth(150);
         t.setResizable(false);//设置列宽不能改变       
         /*根据勾选情况创建其他列*/
         for(int i=1;i<GlobalVar.columns.length;i++){
@@ -404,6 +408,7 @@ public class View2 extends ViewPart {
             	tc.setText(GlobalVar.columns[i]);
             	
             	/*获取bug方法勾选情况*/
+            	/*TODO:勾选方法需存储为全局 供后续使用*/
             	if(choice.methodChoice(i-1)==true)
             		tc.setWidth(100);/*设置列宽*/  
             	else

@@ -16,6 +16,8 @@ import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.*;
 import org.eclipse.jgit.lib.Ref;
 
+import com.sl.v0.datas.GlobalVar;
+
 public class DownloadCode {  
 	
 	/*获取项目版本号列表*/
@@ -62,6 +64,7 @@ public class DownloadCode {
 			String[] urlPath=url.split("/");
 			String file=urlPath[urlPath.length-1];
 			String path=localPath+"/"+file+"/"+version;
+			GlobalVar.codeFolderName=file+"\\"+version;
 			
 			File dir =new File(path);    
 			/*判断项目文件是否存在*/

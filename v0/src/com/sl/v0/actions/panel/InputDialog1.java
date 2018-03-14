@@ -27,6 +27,7 @@ public class InputDialog1 {
 				null,"请选择要下载的版本:\n", "项目版本", JOptionPane.PLAIN_MESSAGE, new ImageIcon("icon.png"), versions,"");
 		
 			if(version!=null){
+				GlobalVar.bugVersion=version;
 				/*github项目代码下载*/
 				String localPath = "E://GithubCode";
 				String result=(new DownloadCode()).cloneRepository(sourcecode,localPath,version);
@@ -65,7 +66,7 @@ public class InputDialog1 {
 
 		/*判断是否输入网址*/
 		if(!report.equals("")&&report!=null){
-			String re=(new DownloadReport()).DownloadReport(report,localPath);
+			String re=(new DownloadReport()).DownloadReport(report,localPath,GlobalVar.bugVersion);
 			if(re=="success")
 				JOptionPane.showMessageDialog(null, "bug报告获取成功！");
 			else

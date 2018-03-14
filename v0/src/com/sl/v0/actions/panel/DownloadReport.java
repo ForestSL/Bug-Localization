@@ -18,22 +18,36 @@ import javax.swing.JOptionPane;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 
+import com.sl.v0.datas.GlobalVar;
+
 public class DownloadReport {
 	
 	/*根据用户输入的url组装带有选择信息的新的url*/
-	public static String DownloadReport(String url,String localPath){
+	public static String DownloadReport(String url,String localPath,String version){
 		
 		String[] murl=url.split("/");
 		String project=murl[murl.length-1].toUpperCase();/*获取用户查找的bug数据库项目名*/
-		String newUrl="https://issues.apache.org/jira/sr/jira.issueviews:searchrequest-xml/temp/SearchRequest.xml?jqlQuery=project+%3D+"
-		+project+"+AND+issuetype+%3D+Bug+AND+status+%3D+Open+ORDER+BY+priority+DESC%2C+updated+DESC&tempMax=1000";
-		String re=OpenHtml(newUrl,project,localPath);
+		String newUrl=null;
+		String re=null;
+		/*用户未指定对应版本*/
+		if(version==null){
+			newUrl="https://issues.apache.org/jira/sr/jira.issueviews:searchrequest-xml/temp/SearchRequest.xml?jqlQuery=project+%3D+"
+			           +project+"+AND+issuetype+%3D+Bug+AND+affectedVersion+%3D+EMPTY+ORDER+BY+priority+DESC%2C+updated+DESC&tempMax=1000";
+			re=OpenHtml(newUrl,project,localPath,"all");
+		}else{/*指定bug报告版本*/
+			String[] v=version.split("-");
+			version=v[v.length-1];/*处理版本号格式 获取版本数字*/
+			newUrl="https://issues.apache.org/jira/sr/jira.issueviews:searchrequest-xml/temp/SearchRequest.xml?jqlQuery=project+%3D+"
+				      +project+"+AND+issuetype+%3D+Bug+AND+affectedVersion+%3D+"
+				      +version+"+ORDER+BY+priority+DESC%2C+updated+DESC&tempMax=1000";
+			re=OpenHtml(newUrl,project,localPath,version);
+		}
 
 		return re;
 	}
 	
 	/*临时方法：直接在url中指定选择信息进行html下载*/
-	public static String OpenHtml(String url,String project,String localPath){
+	public static String OpenHtml(String url,String project,String localPath,String version){
         try {
             HttpURLConnection httpUrlConnection = (HttpURLConnection) new URL(url).openConnection();
             httpUrlConnection.setRequestMethod("GET");
@@ -42,8 +56,9 @@ public class DownloadReport {
             InputStream inputStream = httpUrlConnection.getInputStream(); //读取输入流
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8")); 
             String string;
-            String file=localPath+"/"+project+".xml";
+            String file=localPath+"/"+project+version+".xml";
             //String file="E:\\"+project+".xml";
+            GlobalVar.bugReportName=project+version+".xml";
             
             File dir =new File(file);    
 			/*判断项目文件是否存在*/

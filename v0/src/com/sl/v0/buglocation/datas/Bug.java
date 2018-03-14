@@ -1,4 +1,4 @@
-package com.sl.v0.datas;
+package com.sl.v0.buglocation.datas;
 
 import java.util.ArrayList;
 
