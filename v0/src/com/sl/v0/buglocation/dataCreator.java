@@ -22,13 +22,7 @@ import com.sl.v0.buglocation.datas.Bug;
 import com.sl.v0.buglocation.datas.Utility;
 import com.sl.v0.datas.GlobalVar;
 
-public class DataCreator extends BaseExecutable{
-	
-	@Override
-	public void Execute() {
-		// TODO 自动生成的方法存根
-		
-	}
+public class DataCreator {
 	
     /*测试用*/
 	public static void main(String[] args) {  
@@ -49,7 +43,7 @@ public class DataCreator extends BaseExecutable{
 			int currentBugsCount = 0;
 	    	for(int i = 0; i < buglist.getLength(); i++){	    		
 	    		++currentBugsCount;
-				Utility.Status("Reading bug (" + currentBugsCount + " of " + bugsCount + ")");
+				//Utility.Status("Reading bug (" + currentBugsCount + " of " + bugsCount + ")");
 				/*新建bug加入总bug列表*/
 				Bug bug = new Bug();	    		
 	    		Element ele = (Element) buglist.item(i);
