@@ -7,7 +7,7 @@ public class MyDoubleDictionary extends HashMap<String, Double>{
 	{
 		if (this.containsKey(term))
 		{
-			this.put(term, this.get(term) + 1);
+			this.put(term, (Double)(this.get(term) + 1));
 		}
 		else
 		{

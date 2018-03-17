@@ -8,10 +8,11 @@ import java.util.Arrays;
 public final class Utility{
 	
 	/*TODO:数据集文件夹已修改 待确认*/
-	public static final String ReportFolderPath = "E:\\Research-Dataset\\Bug\\Report\\";
-	public static final String DatasetFolderPath = "E:\\Research-Dataset\\Bug\\Source\\";
+	public static final String ResultFolderPath = "E:\\BugLocation\\Result\\";
+	public static final String ReportFolderPath = "E:\\BugLocation\\Report\\";
+	public static final String DatasetFolderPath = "E:\\BugLocation\\Source\\";
 	public static final String MoreBugDatasetRelativeFolderPath = "moreBugs\\";
-	public static final String CommonErrorPathFile = "E:\\Research-Dataset\\Bug\\Error.txt";
+	public static final String CommonErrorPathFile = "E:\\BugLocation\\Error.txt";
 
 	public static final int ParallelThreadCount = 1;
 

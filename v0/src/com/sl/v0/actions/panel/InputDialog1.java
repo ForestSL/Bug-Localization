@@ -29,7 +29,7 @@ public class InputDialog1 {
 			if(version!=null){
 				GlobalVar.bugVersion=version;
 				/*github项目代码下载*/
-				String localPath = "E://GithubCode";
+				String localPath = "E:\\BugLocation\\Source\\GithubCode";
 				String result=(new DownloadCode()).cloneRepository(sourcecode,localPath,version);
 				if(result.compareTo("success")==0){
 					JOptionPane.showMessageDialog(null, "项目"+version+"获取成功！");
@@ -61,7 +61,7 @@ public class InputDialog1 {
 		String report = JOptionPane.showInputDialog(  
 	      "输入bug数据库网址：");
 		
-		String localPath = "E://BugReport";
+		String localPath = "E:\\BugLocation\\Source\\BugReport";
 		report.replace(" ", "");
 
 		/*判断是否输入网址*/

@@ -6,7 +6,10 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -20,15 +23,90 @@ import org.xml.sax.SAXException;
 
 import com.sl.v0.buglocation.datas.Bug;
 import com.sl.v0.buglocation.datas.Utility;
+import com.sl.v0.buglocation.models.MyListTDictionary;
 import com.sl.v0.datas.GlobalVar;
 
 public class DataCreator {
 	
+	private static final String DataSetFolderName = "GithubCode\\cxf.git\\cxf-2.7.11\\";
+
+	private static final String OutputCorpusFolderName = "Corpus\\";
+	private static final String OutputBugQueryFileName = "BugQuery.txt";
+	private static final String OutputRelListFileName = "RelList.txt";
+	private static final String OutputFileListFileName = "FileList.txt";
+	private static final String QuerySourceFileName = "BugReport\\cxf2.7.11.xml";
+	
+	private static final String ReportFolderPath = Utility.ReportFolderPath + DataSetFolderName;
+	private static final String FileFolderName=Utility.DatasetFolderPath+DataSetFolderName;
+	private static final String BugFileName=Utility.DatasetFolderPath+QuerySourceFileName;
+	private static final String CorpusFolderPath = ReportFolderPath + OutputCorpusFolderName;
+	
     /*测试用*/
 	public static void main(String[] args) {  
-		 GetFiles("E:\\GithubCode\\cxf.git\\cxf-2.7.11");
-		 GetBugs("E:\\BugReport\\cxf2.7.11.xml");
+		 execute();
 	} 
+	
+	public static void execute(){
+		
+		MyListTDictionary<File> javaFiles = new MyListTDictionary<File>();
+		GetFiles(FileFolderName,javaFiles);
+		List<Bug> allBugs=GetBugs(BugFileName);
+		
+		/* Create relevance list*/
+		HashMap<File, Integer> allIndexedFiles = new HashMap<File, Integer>();
+		int counter = 1;
+		Iterator it = javaFiles.keySet().iterator();   
+		while(it.hasNext()){
+			List<File> f=javaFiles.get(it.next());
+			//System.out.println(javaFiles.get(it.next()).get(0));
+			for(int i=0;i<f.size();i++)
+				allIndexedFiles.put(f.get(i), counter++);
+		}
+		
+		/* Create a directory in eclipse saying Corpus*/
+		if ((new File(ReportFolderPath)).isDirectory()){
+			(new File(ReportFolderPath)).delete();
+		}
+		(new File(ReportFolderPath)).mkdirs();
+		(new File(CorpusFolderPath)).mkdirs();
+		
+		int corpusCounter = 1;
+		int totalCorpus = allIndexedFiles.size();
+		for (Map.Entry<File, Integer> fileWithIndex : allIndexedFiles.entrySet())
+		{
+			(new BaseFunction()).WriteAllLines(CorpusFolderPath + fileWithIndex.getValue() + ".txt", 
+					(new BaseFunction()).TextWithFilter((new BaseFunction()).ReadAllText(fileWithIndex.getKey().toString())));
+			//System.out.println("Writing corpus " + corpusCounter + " of " + totalCorpus);
+			++corpusCounter;
+		}
+		
+		ArrayList<String> content=new ArrayList<String>();
+		Iterator it2 = allIndexedFiles.keySet().iterator();   
+		while(it2.hasNext()){
+			Object key2=it2.next();
+			content.add(allIndexedFiles.get(key2)+" "+key2);
+		}
+		(new BaseFunction()).WriteAllLines(ReportFolderPath + OutputFileListFileName, content);
+		
+		/* Create stuff*/ 
+		int bugCounter = 1;
+		int totalBug = allBugs.size();
+		for (Bug bug : allBugs){
+			String bugFolderPath = ReportFolderPath + bug.getBugId() + "\\";
+			(new File(bugFolderPath)).mkdirs();
+
+			(new BaseFunction()).WriteAllLines(bugFolderPath + OutputBugQueryFileName, (new BaseFunction()).TextWithFilter(bug.getSummary() + " " + bug.getDescription()));
+
+			//ArrayList<String> relevanceList = bug.getFixedFiles().SelectMany(x -> relevanceMappingDictionary.get(x).Select(y -> allIndexedFiles.get(y).toString())).Distinct().ToList();
+
+			//(new BaseFunction()).WriteAllLines(bugFolderPath + OutputRelListFileName, relevanceList);
+
+			//System.out.println("Done writing bug " + bugCounter + " of " + totalBug);
+			++bugCounter;
+		}
+		
+		
+	}
 	
 	/*获取xml文件中bug信息*/
 	public static List<Bug> GetBugs(String filePath){
@@ -81,28 +159,24 @@ public class DataCreator {
 	
 	
 	/*获取指定项目目录下的所有java文件*/
-	public static List<File> GetFiles(String directory)
+	public static void GetFiles(String directory,MyListTDictionary<File> javaFiles)
 	{	
 		File dir = new File(directory);
         FilenameFilter fileter = new FileterByJava(".java");/*过滤.java文件*/
         List<File> fileList = new ArrayList<File>();
         getFileList(dir,fileter,fileList);
-        File desFile = new File(dir, "FileList.txt");/*项目同目录下*/
-        write2File(fileList, desFile);
+//        File f=new File(ReportFolderPath);
+//      	f.mkdirs();/*先创建文件夹*/
+//        File desFile = new File(ReportFolderPath,OutputFileListFileName);
+//        write2File(fileList, desFile);
         
-        /*TODO:赋值table表文件名(可选择是否在此处赋值 因为返回值是文件列表 可后续使用)*/
-        GlobalVar.objs=new Object[fileList.size()][];
+        /*返回文件键值对（绝对路径）*/
         for(int i=0;i<fileList.size();i++){
-        	GlobalVar.objs[i]=new Object[6];
         	String[] filePath=fileList.get(i).toString().split("\\\\");
         	String fileName=filePath[filePath.length-1];
-        	GlobalVar.objs[i][0]=fileName;
-        	for(int j=1;j<6;j++)
-        		GlobalVar.objs[i][j]=0;/*初始值*/
+        	javaFiles.Add(fileName, fileList.get(i));
         }
-        
-        /*返回文件列表（绝对路径）*/
-		return fileList;
+
 	}
 	
     /**

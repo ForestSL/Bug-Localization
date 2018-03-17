@@ -1,11 +1,15 @@
 package com.sl.v0.buglocation;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.*;
+import java.util.Map.Entry;
 
 import com.sl.v0.buglocation.datas.Bug;
 import com.sl.v0.buglocation.datas.Utility;
@@ -17,21 +21,26 @@ public class CalculatorVSM {
 	private static boolean _cleanPrevious;
 	private static boolean _runVsm;
 	private static final String VsmFileName = "Results\\Vsm.txt";
+	private static final String CorpusWithFilterFolderName = "Corpus\\";
+	private static final String QueryWithFilterFileName = "BugQuery.txt";
 	
 	/*存储文件名-文件内容映射*/
 	private static final HashMap<String, ArrayList<String>> CodeFilesWithContent = new HashMap<String, ArrayList<String>>();
 	
     /*测试用*/
 	public static void main(String[] args) {  
-		
+		(new DataCreator()).execute();
+		RunVSM("GithubCode\\cxf.git\\cxf-2.7.11\\");
 	} 
 		
-	public void RunVSM(String path){
-		String datasetFolderPath = path;
-		String vsmCompletedFilePath = datasetFolderPath + VsmCompletedFile;
-		File file=new File(vsmCompletedFilePath);
+	public static void RunVSM(String path){
 		
-		if (_runVsm && (!file.exists() || _cleanPrevious)){
+		String datasetFolderPath = Utility.ReportFolderPath+path;
+		String resultFolderPath = Utility.ResultFolderPath+path;
+		String vsmCompletedFilePath = datasetFolderPath + VsmCompletedFile;
+		
+		File file=new File(vsmCompletedFilePath);		
+		if (!file.exists()){
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
@@ -41,30 +50,89 @@ public class CalculatorVSM {
 			}
 		}
 				
-		ArrayList<String> completedVsm = _runVsm ? ReadAllLines(vsmCompletedFilePath) : new ArrayList<String>();
+		ArrayList<String> completedVsm = (new BaseFunction()).ReadAllLines(vsmCompletedFilePath);
 		
-		/*获取bug报告中的bug*/
-		List<Bug> bugs = (new DataCreator()).GetBugs("E:\\BugReport\\CXF2.7.11.xml");
+		List<File> bugs=new ArrayList<File>();
+		CheckFileName(datasetFolderPath,bugs);
 		int totalbugsCount = bugs.size();
+		//System.out.println(totalbugsCount);
 		
-		/*读取并保存java文件内容*/
+		/*TODO:读取并保存java文件内容*/
         Utility.Status("Reading Files");
-        List<File> allFiles = (new DataCreator()).GetFiles("E:\\GithubCode\\cxf.git\\cxf-2.7.11");
+        List<File> allFiles = new ArrayList<File>();
+        (new BaseFunction()).GetFiles(datasetFolderPath + CorpusWithFilterFolderName,allFiles);
         int counter = 1;
         for(int i=0;i<allFiles.size();i++){
-            Utility.Status("Reading " + (counter++) + " of " + allFiles.size());
-            ArrayList<String> text = ReadAllLines(allFiles.get(i).toString());
+            //Utility.Status("Reading " + (counter++) + " of " + allFiles.size());
+            ArrayList<String> text = (new BaseFunction()).ReadAllLines(allFiles.get(i).toString());
             CodeFilesWithContent.put(allFiles.get(i).toString(), text);
         }
+        //System.out.println("Corpus:"+CodeFilesWithContent.size());
         
         /*初始化*/
         Utility.Status("Initializing");
-        if (_runVsm)
+        //if (_runVsm)
             InitializeForVsm();
         
-        /*TODO*/
+        /*Create files*/
+        int completedCount = 0;
+        for(int i=0;i<totalbugsCount;i++){
+        	++completedCount;
+        	//try
+			//{
+				Utility.Status("Creating Stuffs: " + bugs.get(i).getName() + " " + completedCount + " of " + totalbugsCount);
+
+				if (completedVsm.contains(bugs.get(i).getName()))
+				{
+					Utility.Status("Already Completed Stuff: " + bugs.get(i).getName() + " " + completedCount + " of " + totalbugsCount);
+					return;
+				}
+
+				String bugFolderPath = datasetFolderPath + bugs.get(i).getName() + "\\";
+
+				if (!(new File(bugFolderPath + "Results")).isDirectory())
+				{
+					(new File(bugFolderPath + "Results")).mkdirs();
+				}
+
+				ArrayList<String> queryText = (new BaseFunction()).ReadAllLines(bugFolderPath + QueryWithFilterFileName);
+				//System.out.println("query:"+queryText.get(1));
+				
+				if (!completedVsm.contains(bugs.get(i).getName()))
+				{
+					ComputeVsm(bugFolderPath, bugs.get(i).getName(), queryText);
+					completedVsm.add(bugs.get(i).getName());
+				}
+
+				Utility.Status("DONE Creating Stuff: " + bugs.get(i).getName() + " (" + completedCount + " of " + totalbugsCount + ")");
+			}
+			//catch (RuntimeException e)
+			//{
+				//Utility.WriteErrorCommon(path + bugs.get(i).getName(), e.getMessage());
+				//Utility.Status("ERROR Creating Stuff: " + path + bugs.get(i).getName() + " (" + completedCount + " of " + totalbugsCount + ")");
+			//}
+			//finally
+			//{
+				//if (_runVsm)
+				//{
+					(new BaseFunction()).WriteAllLines(vsmCompletedFilePath, completedVsm);
+				//}
+				
+			//}
+        //}
         
 	} 
+	
+	public static void CheckFileName(String path,List<File> files) {  
+	    File file = new File(path);
+	    File[] tempList = file.listFiles();
+	    for (int i = 0; i < tempList.length; i++) {
+	        if (tempList[i].isDirectory()&&!(tempList[i].getName().equals("Corpus"))) {
+//	              System.out.println("文件夹：" + tempList[i]);
+	        	files.add(tempList[i]);
+	        }
+	    }
+    } 
 	
 	private static final MyDoubleDictionary IdfDictionary = new MyDoubleDictionary();
 	private static final HashMap<String, MyDoubleDictionary> TfDictionary = new HashMap<String, MyDoubleDictionary>();
@@ -91,7 +159,8 @@ public class CalculatorVSM {
              * At this point idf holds document frequency*/
             Iterator it2=fileTfDictionary.keySet().iterator();
             while(it2.hasNext()){
-            	IdfDictionary.Add((String) it2.next());
+            	String key2=(String) it2.next();
+            	IdfDictionary.Add(key2);
             }
         }
         
@@ -99,18 +168,30 @@ public class CalculatorVSM {
         int totalNumberOfDocuments = CodeFilesWithContent.size();
         Iterator it3=IdfDictionary.keySet().iterator();
         while(it3.hasNext()){	
-			IdfDictionary.put((String) it3.next(), Math.log10(totalNumberOfDocuments / IdfDictionary.get(it3.next())));
+        	String key3=(String) it3.next();
+			IdfDictionary.put(key3, Math.log10(totalNumberOfDocuments / IdfDictionary.get(key3)));
 		}
         
         /* update tfidf for each file*/
         Iterator it4=TfDictionary.keySet().iterator();
         while(it4.hasNext()){
             MyDoubleDictionary fileTfIdfDictionary = new MyDoubleDictionary();
-            Iterator it5=TfDictionary.get((String)it4.next()).keySet().iterator();
+            MyDoubleDictionary mdd5=new MyDoubleDictionary();
+            String key4=(String)it4.next();
+            mdd5=TfDictionary.get(key4);
+            Iterator it5= mdd5.keySet().iterator();
             while(it5.hasNext()){
-                fileTfIdfDictionary.put((String) it5.next(), TfDictionary.get((String)it4.next()).get(it5.next()) * IdfDictionary.get(it5.next()));
+            	MyDoubleDictionary mdd=new MyDoubleDictionary();
+            	mdd=TfDictionary.get(key4);
+            	String key5=(String)it5.next();
+            	if(mdd.containsKey(key5)&&IdfDictionary.containsKey(key5)){
+            		Double dvalue= mdd.get(key5) * IdfDictionary.get(key5);
+            		fileTfIdfDictionary.put(key5, dvalue);
+            	}else{
+            		System.out.println("----------------------------");
+            	}
             }
-            TfIdfDictionary.put((String) it4.next(), fileTfIdfDictionary);
+            TfIdfDictionary.put(key4, fileTfIdfDictionary);
         }   
         
 	}
@@ -121,65 +202,80 @@ public class CalculatorVSM {
 
         /* CREATE QUERY TFIDF*/
 		MyDoubleDictionary queryTfIdfDictionary = new MyDoubleDictionary();
-		for(int i=0;i<queryText.size();i++)
+		for(int i=0;i<queryText.size();i++){
+			//System.out.println(queryText.get(i));
 			queryTfIdfDictionary.Add(queryText.get(i));
+		}
+		//System.out.println(queryTfIdfDictionary.size());
 	
 		/* max frequency*/
-        List<Double> list=new ArrayList();
-        Iterator it=queryTfIdfDictionary.entrySet().iterator();
+        ArrayList<Double> list=new ArrayList<Double>();
+        Iterator it=queryTfIdfDictionary.keySet().iterator();
         while(it.hasNext()){
-            list.add(queryTfIdfDictionary.get(it.next()));
+        	Object key= it.next();
+        	//System.out.println(key.toString());
+        	//System.out.println(queryTfIdfDictionary.get(key));
+            list.add((Double)queryTfIdfDictionary.get(key));
         }
         Collections.sort(list);
         double maxFrequency = list.get(list.size()-1);
                 
         /* now multiply each by idf to get tfidf for query*/
-        Iterator it2=queryTfIdfDictionary.entrySet().iterator();
+        Iterator it2=queryTfIdfDictionary.keySet().iterator();
         while(it2.hasNext()){
-        	queryTfIdfDictionary.put((String) it2.next(), IdfDictionary.containsKey(it2.next())
-        			? (queryTfIdfDictionary.get(it2.next())/maxFrequency)*IdfDictionary.get(it2.next()):0); 
+        	String key2=(String) it2.next();
+        	queryTfIdfDictionary.put(key2, IdfDictionary.containsKey(key2)
+        			? (queryTfIdfDictionary.get(key2)/maxFrequency)*IdfDictionary.get(key2):0); 
         }
         
         /*CALCULATE SIMILARITY*/
         MyDoubleDictionary similarityDictionary = new MyDoubleDictionary();
         CosineSimilarityCalculator cosineSimilarityCalculator = new CosineSimilarityCalculator(queryTfIdfDictionary);
         
-        /*TODO:compute similarity of fileText with each _codeFiles*/
+        /*compute similarity of fileText with each _codeFiles*/
+        Iterator it3=TfIdfDictionary.keySet().iterator();
+        while(it3.hasNext()){
+        	String key3=(String) it3.next();
+        	//if(it3.next()=="675"||it3.next()=="6405"){
+        		double cosineSimilarityWithUseCase = cosineSimilarityCalculator.GetSimilarity(TfIdfDictionary.get(key3));
+        		similarityDictionary.put(key3, cosineSimilarityWithUseCase);
+            //}
+        }
         
+        /*WRITE TO FILE*/
+        WriteDocumentVectorToFileOrderedDescending(outputFolderPath + VsmFileName, similarityDictionary);
+
+        Utility.Status("Completed VSM: " + bugName);
         
 	}
 	
-	/*逐行读取文件内容 存储至数组*/
-	public ArrayList<String> ReadAllLines(String filePath){
-		FileReader fileReader;
-		try {
-			fileReader = new FileReader(filePath);
-	        BufferedReader bufferedReader =new BufferedReader(fileReader);
-	        StringBuilder  stringBuilder =new StringBuilder();
-	        ArrayList<String>  strings =new ArrayList<>();
-	        String  str=null;
-	        
-	        while ((str=bufferedReader.readLine())!=null) {
-	        	System.out.println(str);
-	        	if (str.trim().length()>2) {
-	        		strings.add(str);
-	            }
-	            	
-	        	System.out.println(strings.size());
-	        	for (int i = 0; i < strings.size(); i++) {
-	        		System.out.println(strings.get(i));
-	            }
-	        }
-	        return strings;
-			
-		} catch (FileNotFoundException e) {
-			// TODO 自动生成的 catch 块
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO 自动生成的 catch 块
-			e.printStackTrace();
-		}
-		return null;
-	}
+	/*Writes vector to file ordered*/
+	public static void WriteDocumentVectorToFileOrderedDescending(String filePath, MyDoubleDictionary vector)
+    {
+		boolean asInt = false;
+        String pattern = asInt ? "##" : "##.00000";
+        
+        /*将vector.entrySet()转换成list*/  
+        List<Map.Entry<String, Double>> list = new ArrayList<Map.Entry<String, Double>>(vector.entrySet());  
+        Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {  
+            /*按value降序排序*/  
+            @Override  
+            public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {   
+                return o2.getValue().compareTo(o1.getValue());  
+            }  
+        }); 
+        
+        ArrayList<String> content=new ArrayList<String>();
+        Iterator it=vector.keySet().iterator();
+        while(it.hasNext()){
+        	String key=(String) it.next();
+        	/*格式化vector.get(it.next())*/
+        	String.format(pattern, vector.get(key));
+        	content.add(key+" "+vector.get(key));
+        }
+        
+        /*逐行写入文件*/
+        (new BaseFunction()).WriteAllLines(filePath, content);
+    }
 
 }
