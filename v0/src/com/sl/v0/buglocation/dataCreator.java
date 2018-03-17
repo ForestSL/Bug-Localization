@@ -1,5 +1,7 @@
 package com.sl.v0.buglocation;
 
+/*提取数据：获取bugquery和java文件corpus语料库*/
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -11,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JOptionPane;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,27 +31,29 @@ import com.sl.v0.datas.GlobalVar;
 
 public class DataCreator {
 	
-	private static final String DataSetFolderName = "GithubCode\\cxf.git\\cxf-2.7.11\\";
+	//private static final String DataSetFolderName = "GithubCode\\cxf.git\\cxf-2.7.11\\";
+	private static final String DataSetFolderName = GlobalVar.codeFolderName;
 
 	private static final String OutputCorpusFolderName = "Corpus\\";
 	private static final String OutputBugQueryFileName = "BugQuery.txt";
-	private static final String OutputRelListFileName = "RelList.txt";
 	private static final String OutputFileListFileName = "FileList.txt";
-	private static final String QuerySourceFileName = "BugReport\\cxf2.7.11.xml";
+	//private static final String QuerySourceFileName = "BugReport\\cxf2.7.11.xml";
+	private static final String QuerySourceFileName =GlobalVar.bugReportName;
 	
-	private static final String ReportFolderPath = Utility.ReportFolderPath + DataSetFolderName;
+	public static final String ReportFolderPath = Utility.ReportFolderPath + DataSetFolderName;
 	private static final String FileFolderName=Utility.DatasetFolderPath+DataSetFolderName;
 	private static final String BugFileName=Utility.DatasetFolderPath+QuerySourceFileName;
 	private static final String CorpusFolderPath = ReportFolderPath + OutputCorpusFolderName;
 	
     /*测试用*/
 	public static void main(String[] args) {  
-		 execute();
+		 GetDatas();
 	} 
 	
-	public static void execute(){
+	public static void GetDatas(){
 		
 		MyListTDictionary<File> javaFiles = new MyListTDictionary<File>();
+		JOptionPane.showMessageDialog(null,"读取项目java文件和bug报告xml文件中……");
 		GetFiles(FileFolderName,javaFiles);
 		List<Bug> allBugs=GetBugs(BugFileName);
 		
@@ -59,8 +64,10 @@ public class DataCreator {
 		while(it.hasNext()){
 			List<File> f=javaFiles.get(it.next());
 			//System.out.println(javaFiles.get(it.next()).get(0));
-			for(int i=0;i<f.size();i++)
-				allIndexedFiles.put(f.get(i), counter++);
+			for(int i=0;i<f.size();i++){
+				int index=counter++;
+				allIndexedFiles.put(f.get(i), index);
+			}
 		}
 		
 		/* Create a directory in eclipse saying Corpus*/
@@ -79,6 +86,7 @@ public class DataCreator {
 			//System.out.println("Writing corpus " + corpusCounter + " of " + totalCorpus);
 			++corpusCounter;
 		}
+		JOptionPane.showMessageDialog(null,"生成java文件对应corpus文件");
 		
 		ArrayList<String> content=new ArrayList<String>();
 		Iterator it2 = allIndexedFiles.keySet().iterator();   
@@ -87,6 +95,7 @@ public class DataCreator {
 			content.add(allIndexedFiles.get(key2)+" "+key2);
 		}
 		(new BaseFunction()).WriteAllLines(ReportFolderPath + OutputFileListFileName, content);
+		JOptionPane.showMessageDialog(null,"生成java文件列表");
 		
 		/* Create stuff*/ 
 		int bugCounter = 1;
@@ -94,16 +103,19 @@ public class DataCreator {
 		for (Bug bug : allBugs){
 			String bugFolderPath = ReportFolderPath + bug.getBugId() + "\\";
 			(new File(bugFolderPath)).mkdirs();
-
 			(new BaseFunction()).WriteAllLines(bugFolderPath + OutputBugQueryFileName, (new BaseFunction()).TextWithFilter(bug.getSummary() + " " + bug.getDescription()));
-
-			//ArrayList<String> relevanceList = bug.getFixedFiles().SelectMany(x -> relevanceMappingDictionary.get(x).Select(y -> allIndexedFiles.get(y).toString())).Distinct().ToList();
-
-			//(new BaseFunction()).WriteAllLines(bugFolderPath + OutputRelListFileName, relevanceList);
-
-			//System.out.println("Done writing bug " + bugCounter + " of " + totalBug);
 			++bugCounter;
 		}
+		JOptionPane.showMessageDialog(null,"生成bugQuery文件");
+		
+		ArrayList<String> content2=new ArrayList<String>();
+		for(int i=0;i<allBugs.size();i++){
+			Bug bug=allBugs.get(i);
+			String tmp=bug.getBugId()+"#####"+bug.getSummary()+"#####"+bug.getDescription();
+			content2.add(tmp);
+		}
+		String file=ReportFolderPath+"Buglist.txt";
+		(new BaseFunction()).WriteAllLines(file, content2);
 		
 		
 	}
@@ -153,7 +165,7 @@ public class DataCreator {
 	    }catch (SAXException e){
 	    	e.printStackTrace();
 	    }
-
+	    
 		return allbugs;
 	}
 	

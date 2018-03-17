@@ -1,5 +1,7 @@
 package com.sl.v0.buglocation;
 
+/*VSM计算：得每个bug下所有java与该bug的相似度*/
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,9 +13,12 @@ import java.io.OutputStreamWriter;
 import java.util.*;
 import java.util.Map.Entry;
 
+import javax.swing.JOptionPane;
+
 import com.sl.v0.buglocation.datas.Bug;
 import com.sl.v0.buglocation.datas.Utility;
 import com.sl.v0.buglocation.models.MyDoubleDictionary;
+import com.sl.v0.datas.GlobalVar;
 
 public class CalculatorVSM {
 
@@ -28,15 +33,15 @@ public class CalculatorVSM {
 	private static final HashMap<String, ArrayList<String>> CodeFilesWithContent = new HashMap<String, ArrayList<String>>();
 	
     /*测试用*/
-	public static void main(String[] args) {  
-		(new DataCreator()).execute();
-		RunVSM("GithubCode\\cxf.git\\cxf-2.7.11\\");
-	} 
+//	public static void main(String[] args) {  
+//		(new DataCreator()).GetDatas();
+//		//RunVSM("GithubCode\\cxf.git\\cxf-2.7.11\\");
+//		RunVSM(GlobalVar.codeFolderName);
+//	} 
 		
 	public static void RunVSM(String path){
 		
 		String datasetFolderPath = Utility.ReportFolderPath+path;
-		String resultFolderPath = Utility.ResultFolderPath+path;
 		String vsmCompletedFilePath = datasetFolderPath + VsmCompletedFile;
 		
 		File file=new File(vsmCompletedFilePath);		
@@ -44,7 +49,6 @@ public class CalculatorVSM {
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
-				// TODO 自动生成的 catch 块
 				e.printStackTrace();
 				System.out.println("CompletedVsm.txt创建失败！");
 			}
@@ -53,12 +57,12 @@ public class CalculatorVSM {
 		ArrayList<String> completedVsm = (new BaseFunction()).ReadAllLines(vsmCompletedFilePath);
 		
 		List<File> bugs=new ArrayList<File>();
-		CheckFileName(datasetFolderPath,bugs);
+		(new BaseFunction()).CheckFileName(datasetFolderPath,bugs);
 		int totalbugsCount = bugs.size();
 		//System.out.println(totalbugsCount);
 		
-		/*TODO:读取并保存java文件内容*/
         Utility.Status("Reading Files");
+        JOptionPane.showMessageDialog(null,"正在读文件中……");
         List<File> allFiles = new ArrayList<File>();
         (new BaseFunction()).GetFiles(datasetFolderPath + CorpusWithFilterFolderName,allFiles);
         int counter = 1;
@@ -71,6 +75,7 @@ public class CalculatorVSM {
         
         /*初始化*/
         Utility.Status("Initializing");
+        JOptionPane.showMessageDialog(null,"定位方法初始化中……");
         //if (_runVsm)
             InitializeForVsm();
         
@@ -78,8 +83,8 @@ public class CalculatorVSM {
         int completedCount = 0;
         for(int i=0;i<totalbugsCount;i++){
         	++completedCount;
-        	//try
-			//{
+        	try
+			{
 				Utility.Status("Creating Stuffs: " + bugs.get(i).getName() + " " + completedCount + " of " + totalbugsCount);
 
 				if (completedVsm.contains(bugs.get(i).getName()))
@@ -106,33 +111,23 @@ public class CalculatorVSM {
 
 				Utility.Status("DONE Creating Stuff: " + bugs.get(i).getName() + " (" + completedCount + " of " + totalbugsCount + ")");
 			}
-			//catch (RuntimeException e)
-			//{
-				//Utility.WriteErrorCommon(path + bugs.get(i).getName(), e.getMessage());
-				//Utility.Status("ERROR Creating Stuff: " + path + bugs.get(i).getName() + " (" + completedCount + " of " + totalbugsCount + ")");
-			//}
-			//finally
-			//{
+			catch (RuntimeException e)
+			{
+				Utility.WriteErrorCommon(path + bugs.get(i).getName(), e.getMessage());
+				Utility.Status("ERROR Creating Stuff: " + path + bugs.get(i).getName() + " (" + completedCount + " of " + totalbugsCount + ")");
+			}
+			finally
+			{
 				//if (_runVsm)
 				//{
 					(new BaseFunction()).WriteAllLines(vsmCompletedFilePath, completedVsm);
 				//}
 				
-			//}
-        //}
+			}
+        }
+        JOptionPane.showMessageDialog(null,"生成java文件与bug报告相似度文件");
         
 	} 
-	
-	public static void CheckFileName(String path,List<File> files) {  
-	    File file = new File(path);
-	    File[] tempList = file.listFiles();
-	    for (int i = 0; i < tempList.length; i++) {
-	        if (tempList[i].isDirectory()&&!(tempList[i].getName().equals("Corpus"))) {
-//	              System.out.println("文件夹：" + tempList[i]);
-	        	files.add(tempList[i]);
-	        }
-	    }
-    } 
 	
 	private static final MyDoubleDictionary IdfDictionary = new MyDoubleDictionary();
 	private static final HashMap<String, MyDoubleDictionary> TfDictionary = new HashMap<String, MyDoubleDictionary>();
@@ -266,12 +261,18 @@ public class CalculatorVSM {
         }); 
         
         ArrayList<String> content=new ArrayList<String>();
-        Iterator it=vector.keySet().iterator();
-        while(it.hasNext()){
-        	String key=(String) it.next();
-        	/*格式化vector.get(it.next())*/
-        	String.format(pattern, vector.get(key));
-        	content.add(key+" "+vector.get(key));
+//        Iterator it=vector.keySet().iterator();
+//        while(it.hasNext()){
+//        	String key=(String) it.next();
+//        	/*格式化vector.get(it.next())*/
+//        	String.format(pattern, vector.get(key));
+//        	content.add(key+" "+vector.get(key));
+//        }
+        for(int i=0;i<list.size();i++){
+        	String key=list.get(i).getKey();
+        	Double value=list.get(i).getValue();
+        	String.format(pattern, value);
+        	content.add(key+" "+value);
         }
         
         /*逐行写入文件*/

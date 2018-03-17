@@ -1,11 +1,18 @@
 package com.sl.v0.datas;
 
+import java.io.File;
+import java.util.HashMap;
+
 /*定义全局变量*/
 
 public class GlobalVar {
 	
-	public static String codeFolderName=null;
-	public static String bugReportName=null;
+	/*源代码和bug报告下载路径*/
+	public static String codeFolderName="GithubCode\\cxf.git\\cxf-2.7.11\\";
+	public static String bugReportName="BugReport\\cxf2.7.11.xml";
+	
+	/*bug定位方法勾选 对应方法：VSM LSI JSM NGD PMI*/
+	public static boolean[] isMethod={true,true,true,true,true};
 	
 	public static String bugVersion=null;
 	

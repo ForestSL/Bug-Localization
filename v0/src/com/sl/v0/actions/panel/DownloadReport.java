@@ -58,7 +58,7 @@ public class DownloadReport {
             String string;
             String file=localPath+"/"+project+version+".xml";
             //String file="E:\\"+project+".xml";
-            GlobalVar.bugReportName=project+version+".xml";
+            GlobalVar.bugReportName="BugReport\\"+project+version+".xml";
             
             File dir =new File(file);    
 			/*判断项目文件是否存在*/

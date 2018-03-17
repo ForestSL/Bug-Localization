@@ -7,7 +7,6 @@ public class Bug {
 	private String BugId;
 	private String Summary;
 	private String Description;
-	private ArrayList<String> FixedFiles;
 	
 	public final String getBugId()
 	{
@@ -36,18 +35,6 @@ public class Bug {
 		Description = value;
 	}
 
-	public final ArrayList<String> getFixedFiles()
-	{
-		return FixedFiles;
-	}
-	public final void setFixedFiles(ArrayList<String> value)
-	{
-		FixedFiles = value;
-	}
-
-	public Bug()
-	{
-		setFixedFiles(new ArrayList<String>());
-	}
+	public Bug(){}
 	
 }

@@ -13,6 +13,18 @@ import java.util.List;
 
 public class BaseFunction {
 	
+	/*读取指定目录下所有除Corpus的文件夹*/
+	public static void CheckFileName(String path,List<File> files) {  
+	    File file = new File(path);
+	    File[] tempList = file.listFiles();
+	    for (int i = 0; i < tempList.length; i++) {
+	        if (tempList[i].isDirectory()&&!(tempList[i].getName().equals("Corpus"))) {
+//	              System.out.println("文件夹：" + tempList[i]);
+	        	files.add(tempList[i]);
+	        }
+	    }
+    } 
+	
 	/*读取目录下所有文件*/
     public static void GetFiles(String fileDir,List<File> fileList) {  
         File file = new File(fileDir);  
@@ -100,6 +112,8 @@ public class BaseFunction {
 //	        		System.out.println(strings.get(i));
 //	            }
 	        }
+	        fileReader.close();
+	        bufferedReader.close();
 	        return strings;
 			
 		} catch (FileNotFoundException e) {

@@ -64,7 +64,7 @@ public class DownloadCode {
 			String[] urlPath=url.split("/");
 			String file=urlPath[urlPath.length-1];
 			String path=localPath+"/"+file+"/"+version;
-			GlobalVar.codeFolderName=file+"\\"+version;
+			GlobalVar.codeFolderName="GithubCode\\"+file+"\\"+version+"\\";
 			
 			File dir =new File(path);    
 			/*判断项目文件是否存在*/

@@ -46,6 +46,7 @@ import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.eclipse.ui.part.ViewPart;
 
 import com.sl.v0.buglocation.DataCreator;
+import com.sl.v0.buglocation.DealwithResult;
 import com.sl.v0.datas.Choice;
 import com.sl.v0.datas.GlobalVar;
 import com.sl.v0.datas.TableCell;
@@ -89,8 +90,8 @@ public class View2 extends ViewPart {
     		public void run() {
 				MessageDialog.openInformation(getSite().getShell(), "Run", "Bug Location Running……");
     			
-				/*TODO:bug定位运行操作 更新全局变量中table数据*/
-				//List<File> fileList=(new DataCreator()).GetFiles("E:\\GithubCode\\cxf.git\\cxf-3.1.0");
+				/*根据勾选的方法进行bug定位 更新全局变量中table数据*/
+				(new DealwithResult()).execute(GlobalVar.isMethod);
 				
 				/*运行填充数据到表格*/
 				table.removeAll();
@@ -140,7 +141,7 @@ public class View2 extends ViewPart {
         table = new Table(topComp,  SWT.BORDER);  
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
-        table.setLayoutData(new RowData(600, 100));  
+        table.setLayoutData(new RowData(650, 100));  
         
         /*初始化表格*/
         /*第一列无须考虑勾选情况*/
@@ -400,7 +401,7 @@ public class View2 extends ViewPart {
             /*第一列无须考虑勾选情况*/
             TableColumn t = new TableColumn(table, SWT.CENTER);
         	t.setText(GlobalVar.columns[0]);
-        	t.setWidth(100);
+        	t.setWidth(150);
             t.setResizable(false);//设置列宽不能改变            
             /*根据勾选情况创建其他列*/
             for(int i=1;i<GlobalVar.columns.length;i++){
@@ -408,11 +409,14 @@ public class View2 extends ViewPart {
             	tc.setText(GlobalVar.columns[i]);
             	
             	/*获取bug方法勾选情况*/
-            	/*TODO:勾选方法需存储为全局 供后续使用*/
-            	if(choice.methodChoice(i-1)==true)
+            	/*勾选方法需存储为全局 供后续使用*/
+            	if(choice.methodChoice(i-1)==true){
+            		GlobalVar.isMethod[i-1]=true;
             		tc.setWidth(100);/*设置列宽*/  
-            	else
+            	}else{
+            		GlobalVar.isMethod[i-1]=false;
             		tc.setWidth(0);/*隐藏为勾选的列*/
+            	}
             	
                 tc.setResizable(false);//设置列宽不能改变
             }

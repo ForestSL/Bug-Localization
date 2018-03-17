@@ -3,8 +3,8 @@ package com.sl.v0.buglocation.models;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MyListTDictionary<T> extends HashMap<String, ArrayList<T>>
-{
+public class MyListTDictionary<T> extends HashMap<String, ArrayList<T>>{
+	
 	public final void Add(String term, T value)
 	{
 		if (!this.containsKey(term))

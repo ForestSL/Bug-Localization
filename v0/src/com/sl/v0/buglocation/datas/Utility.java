@@ -7,21 +7,10 @@ import java.util.Arrays;
 
 public final class Utility{
 	
-	/*TODO:数据集文件夹已修改 待确认*/
-	public static final String ResultFolderPath = "E:\\BugLocation\\Result\\";
 	public static final String ReportFolderPath = "E:\\BugLocation\\Report\\";
 	public static final String DatasetFolderPath = "E:\\BugLocation\\Source\\";
 	public static final String MoreBugDatasetRelativeFolderPath = "moreBugs\\";
 	public static final String CommonErrorPathFile = "E:\\BugLocation\\Error.txt";
-
-	public static final int ParallelThreadCount = 1;
-
-	public static final boolean CleanPrevious = false;
-	public static final boolean RunVsm = false;
-	public static final boolean RunLsi = false;
-	public static final boolean RunJsm = false;
-	public static final boolean RunPmi = false;
-	public static final boolean RunNgd = false;
 
 	public static final ArrayList<Integer> LsiKs = new ArrayList<Integer>(Arrays.asList(new Integer[] {50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900}));
 
@@ -48,8 +37,6 @@ public final class Utility{
 			/*c#:打开一个文件，向其中追加指定的字符串，然后关闭该文件。
 			 * 如果文件不存在，此方法将创建一个文件，将指定的字符串写入文件，然后关闭该文件。*/
 			//File.AppendAllText(CommonErrorPathFile, location + NewLine(1) + message + NewLine(2));
-			
-			/*TODO:java重实现上述功能已修改 待确认*/
 			AppendtoFile(CommonErrorPathFile, location + NewLine(1) + message + NewLine(2));
 		}
 	}
