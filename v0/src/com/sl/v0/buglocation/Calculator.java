@@ -17,8 +17,12 @@ import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 
+import Jama.Matrix;
+import Jama.SingularValueDecomposition;
+
 import com.sl.v0.buglocation.datas.Bug;
 import com.sl.v0.buglocation.datas.Utility;
+import com.sl.v0.buglocation.models.DocumentDictionaryAny;
 import com.sl.v0.buglocation.models.MyDoubleDictionary;
 import com.sl.v0.datas.GlobalVar;
 
@@ -51,19 +55,19 @@ public class Calculator {
 	public static void main(String[] args) {  
 		//(new DataCreator()).GetDatas();
 		//RunVSM("GithubCode\\cxf.git\\cxf-2.7.11\\");
-		boolean[] method={false,false,true,false,false};
+		boolean[] method={false,false,false,false,true};
 		Run(GlobalVar.codeFolderName,method);
 	} 
 		
 	public static void Run(String path,boolean[] method){
 		/*method[0-4]:VSM,LSI,JSM,NGD,PMI*/
-		runVSM=method[0];
-		runLSI=method[1];
+		runVSM=method[0];/*成功 计算速度正常*/
+		runLSI=method[1];/*TODO:转java代码*/
 		/*JSM数据问题（已解决） hashmap存储new对象导致的数据覆盖 改用文件存储 也很慢 
 		 * 决定改用初始化和计算放到一起 边读边计算数据*/
-		runJSM=method[2];
-		runNGD=method[3];
-		runPMI=method[4];
+		runJSM=method[2];/*成功 计算速度略慢*/
+		runNGD=method[3];/*TODO:跑不动 一直不出结果*/
+		runPMI=method[4];/*TODO:跑不动 一直不出结果*/
 		
 		String datasetFolderPath = Utility.ReportFolderPath+path;
 		String vsmCompletedFilePath = datasetFolderPath + VsmCompletedFile;
@@ -147,17 +151,17 @@ public class Calculator {
         }
         //System.out.println("Corpus:"+CodeFilesWithContent.size());
         
-        /*TODO:初始化*/
+        /*初始化*/
         Utility.Status("Initializing");
         JOptionPane.showMessageDialog(null,"定位方法初始化中……");
         if (runVSM || runPMI || runLSI || runJSM)
 			InitializeForVsmLsi();
 		if (runJSM)
 			InitializeJsm(datasetFolderPath);
-//		if (runNGD || runPMI )
-//			InitializeForNgdPmi();
-//		if (runLSI)
-//			DoSvd();
+		if (runNGD || runPMI )
+			InitializeForNgdPmi();
+		if (runLSI)
+			DoSvd();
         
         /*Create files*/
         int completedCount = 0;
@@ -182,39 +186,38 @@ public class Calculator {
 				ArrayList<String> queryText = basefunction.ReadAllLines(bugFolderPath + QueryWithFilterFileName);
 				//System.out.println("query:"+queryText.get(1));
 				
-				/*TODO:添加其他方法*/
 				if ( runVSM && !completedVsm.contains(bugs.get(i).getName())){
 					ComputeVsm(bugFolderPath, bugs.get(i).getName(), queryText);
 					completedVsm.add(bugs.get(i).getName());
 				}
 				
-//				if ( runLSI && !completedLsi.contains(bugs.get(i).getName()))
-//				{
-//					if (!(new File(bugFolderPath + LsiOutputFolderName)).isDirectory())
-//					{
-//						(new File(bugFolderPath + LsiOutputFolderName)).mkdirs();
-//					}
-//
-//					ComputeLsi(bugFolderPath, bugs.get(i).getName(), queryText);
-//					completedLsi.add(bugs.get(i).getName());
-//				}
+				if ( runLSI && !completedLsi.contains(bugs.get(i).getName()))
+				{
+					if (!(new File(bugFolderPath + LsiOutputFolderName)).isDirectory())
+					{
+						(new File(bugFolderPath + LsiOutputFolderName)).mkdirs();
+					}
+
+					ComputeLsi(bugFolderPath, bugs.get(i).getName(), queryText);
+					completedLsi.add(bugs.get(i).getName());
+				}
 
 				if ( runJSM && !completedJsm.contains(bugs.get(i).getName())){
 					ComputeJsm(bugFolderPath, bugs.get(i).getName(), queryText);
 					completedJsm.add(bugs.get(i).getName());
 				}
 				
-//				if ( runNGD && !completedNgd.contains(bugs.get(i).getName()))
-//				{
-//					ComputeNgd(bugFolderPath, bugs.get(i).getName(), queryText);
-//					completedNgd.add(bugs.get(i).getName());
-//				}
+				if ( runNGD && !completedNgd.contains(bugs.get(i).getName()))
+				{
+					ComputeNgd(bugFolderPath, bugs.get(i).getName(), queryText);
+					completedNgd.add(bugs.get(i).getName());
+				}
 				
-//				if ( runPMI && !completedPmi.contains(bugs.get(i).getName()))
-//				{
-//					ComputePmi(bugFolderPath, bugs.get(i).getName(), queryText);
-//					completedPmi.add(bugs.get(i).getName());
-//				}
+				if ( runPMI && !completedPmi.contains(bugs.get(i).getName()))
+				{
+					ComputePmi(bugFolderPath, bugs.get(i).getName(), queryText);
+					completedPmi.add(bugs.get(i).getName());
+				}
 				
 				Utility.Status("DONE Creating Stuff: " + bugs.get(i).getName() + " (" + completedCount + " of " + totalbugsCount + ")");
 			
@@ -363,6 +366,142 @@ public class Calculator {
 	}
 	/*VSM end*/
 	
+	/*LSI start*/
+	private static HashMap<Integer, Matrix> _uk;
+	private static HashMap<Integer, Matrix> _sk;
+	private static HashMap<Integer, Matrix> _vkTranspose;
+	
+	private static void DoSvd(){
+		Utility.Status("Creating SVD");
+		
+		/*create the matrix*/
+		int totalNumberOfSourceFiles = TfDictionary.size();
+		int totalDistinctTermsInAllSourceFiles = IdfDictionary.size();
+
+		HashMap<String, Integer> allSourceFilesWithIndex = new HashMap<String, Integer>();
+		int index=0;
+		for (Map.Entry<String, MyDoubleDictionary> fileNameWithTfDictionary : TfDictionary.entrySet()){
+			allSourceFilesWithIndex.put(fileNameWithTfDictionary.getKey(), index);
+			index++;
+		}
+		HashMap<String, Integer> allSourceWordsWithIndex = new HashMap<String, Integer>();
+		index=0;
+		for (Map.Entry<String, Double> fileWordWithTf : IdfDictionary.entrySet()){
+			allSourceWordsWithIndex.put(fileWordWithTf.getKey(), index);
+			index++;
+		}
+		
+		// row, col row is word col docs
+		double[][] sourceMatrix = new double[totalDistinctTermsInAllSourceFiles][totalNumberOfSourceFiles];		
+		for (Map.Entry<String, MyDoubleDictionary> fileNameWithTfDictionary : TfDictionary.entrySet()){
+			int fileIndex = allSourceFilesWithIndex.get(fileNameWithTfDictionary.getKey());
+			Iterator it = (fileNameWithTfDictionary.getValue()).keySet().iterator();   
+			while(it.hasNext()){
+				String fileWordWithTf=(String) it.next();
+				sourceMatrix[allSourceWordsWithIndex.get(fileWordWithTf)][fileIndex] = (fileNameWithTfDictionary.getValue()).get(fileWordWithTf);
+			}
+		}
+		
+		// create matrix
+		Matrix generalMatrix = new Matrix(sourceMatrix);
+
+		// singular value decomposition	
+		//SVD svd = new SVD(generalMatrix);
+		SingularValueDecomposition svd=generalMatrix.svd();
+
+		_uk = new HashMap<Integer, Matrix>();
+		_sk = new HashMap<Integer, Matrix>();
+		_vkTranspose = new HashMap<Integer, Matrix>();
+		
+		ArrayList<Integer> tmp=new ArrayList<Integer>();
+		for(int i=0;i<Utility.LsiKs.size();i++){
+			if(Utility.LsiKs.get(i)< svd.getS().getColumnDimension())
+				tmp.add(Utility.LsiKs.get(i));
+		}
+
+		for(int i=0;i<tmp.size();i++){
+			int k=tmp.get(i);
+			Utility.Status("Creating k matrix of size " + k);
+			_uk.put(k, new Matrix(svd.getU().getArray(), svd.getU().getRowDimension(), k));
+			_sk.put(k, new Matrix(svd.getS().getArray(), k, k));
+			_vkTranspose.put(k, new Matrix(svd.getV().getArray(), k, svd.getV().getColumnDimension()));
+		}
+	}
+	
+	private static void ComputeLsi(String outputFolderPath, String bugName, ArrayList<String> queryText){
+		Utility.Status("Creating LSI: " + bugName);
+
+		int totalDistinctTermsInAllSourceFiles = IdfDictionary.size();
+
+		HashMap<String, Integer> allSourceFilesWithIndex = new HashMap<String, Integer>();
+		int index=0;
+		for (Map.Entry<String, MyDoubleDictionary> fileNameWithTfDictionary : TfDictionary.entrySet()){
+			allSourceFilesWithIndex.put(fileNameWithTfDictionary.getKey(), index);
+			index++;
+		}
+		HashMap<String, Integer> allSourceWordsWithIndex = new HashMap<String, Integer>();
+		index=0;
+		for (Map.Entry<String, Double> fileWordWithTf : IdfDictionary.entrySet()){
+			allSourceWordsWithIndex.put(fileWordWithTf.getKey(), index);
+			index++;
+		}
+		
+		// create one for query as well
+		double[][] queryMatrixTranspose = new double[1][totalDistinctTermsInAllSourceFiles];
+		for(String queryWord:queryText){
+			if (allSourceWordsWithIndex.containsKey(queryWord)){
+				queryMatrixTranspose[0][allSourceWordsWithIndex.get(queryWord)] = queryMatrixTranspose[0][allSourceWordsWithIndex.get(queryWord)] + 1;
+			}
+		}
+		
+		ArrayList<Object> ks = new ArrayList<Object>();
+		Iterator it = _uk.keySet().iterator();   
+		while(it.hasNext()){
+			int x=(int) it.next();
+			if(!(new File(outputFolderPath + LsiOutputFolderName + x + ".txt")).isFile())
+				ks.add(x);
+		}
+	
+		for (Object k : ks){
+			Utility.Status("Creating LSI for " + bugName + " where k=" + k);
+			Matrix uk = _uk.get(k);
+			Matrix sk = _sk.get(k);
+			Matrix vkTranspose = _vkTranspose.get(k);
+
+			Matrix q = new Matrix(queryMatrixTranspose);
+			Matrix tmp=q.times(uk);
+			Matrix qv = tmp.times(sk.inverse());
+			ArrayList<Double> qDoubles =new ArrayList<Double>();
+			for(int i=0;i<qv.getColumnDimension();i++)
+				qDoubles.add(qv.get(0, i));
+
+//			Iterator it2 = allSourceFilesWithIndex.keySet().iterator();   
+//			while(it2.hasNext()){
+//				String doc=(String) it2.next();
+//				double tdouble=GetSimilarity(qDoubles, vkTranspose.ColVector(allSourceFilesWithIndex.get(doc)).ToArray().ToList());
+//			}
+//			HashMap<String,Integer> similarityList = allSourceFilesWithIndex.Select(doc -> new Map.Entry<String, Double>(doc.Key,tdouble ));
+//			
+//			File.WriteAllLines(outputFolderPath + LsiOutputFolderName + k + ".txt", similarityList.OrderByDescending(x -> x.Value).Select(x -> x.Key + " " + x.Value.toString("##.00000")));
+		}
+
+		Utility.Status("Completed LSI: " + bugName);		
+	}
+	
+	private static double GetSimilarity(List<Double> a1, List<Double> a2){
+		double dotProduct = 0;
+		double aSum = 0, bSum = 0;
+
+		for (int i = 0; i < a1.size(); i++){
+			dotProduct += a1.get(i) * a2.get(i);
+			aSum += Math.pow(a1.get(i), 2);
+			bSum += Math.pow(a2.get(i), 2);
+		}
+
+		return dotProduct / (Math.sqrt(aSum) * Math.sqrt(bSum));
+	}
+	/*LSI end*/
+	
 	/*JSM start*/
 	//private static final HashMap<String, double[]> SourceVectors = new HashMap<String, double[]>();
 	//static String SourceVectorsFile = Utility.ReportFolderPath+GlobalVar.codeFolderName+"SourceVectors.txt"; 
@@ -463,6 +602,304 @@ public class Calculator {
 
     }
 	/*JSM end*/
+    
+    /*NGD start*/
+    private static void ComputeNgd(String ngdOutputFolderPath, String bugName, ArrayList<String> fileText){
+    	Utility.Status("Creating NGD: " + bugName);
+    	
+    	if ((new File(ngdOutputFolderPath + NgdFileName)).isFile()){
+			Utility.Status("Ngd File Exists.");
+			return;
+		}
+
+		MyDoubleDictionary tssDocumentDictionary = new MyDoubleDictionary();
+		double logD = Math.log10(CodeFilesWithContent.size() + 1); // just make the N bigger than any
+		
+		/* Create list of word contained in query*/
+		ArrayList<String> distinctQueryWordList = new ArrayList<String>();
+		for(int i=0;i<fileText.size();i++){
+			if(!distinctQueryWordList.contains(fileText.get(i)))/*去重*/
+				distinctQueryWordList.add(fileText.get(i));
+		}
+		DocumentDictionaryAny<MyDoubleDictionary> ngdMatrix = new DocumentDictionaryAny<MyDoubleDictionary>();
+		
+		for (String queryWordW2 : distinctQueryWordList){
+			MyDoubleDictionary ngdDictionary = new MyDoubleDictionary();
+
+			for (String sourceWordW1 : WordAndContainingFiles.keySet()){
+				boolean sourceContainsUseCaseWord = WordAndContainingFiles.containsKey(queryWordW2);
+
+				int countD1 = WordAndContainingFiles.get(sourceWordW1).size();
+				// number of file containing W1 + if query also contains the word
+				int countD2 = sourceContainsUseCaseWord ? WordAndContainingFiles.get(queryWordW2).size() : 0;
+				// if query contains source then add 1 (query contains usecase word + source word
+				// if source contains query word find the intersection of files containing both words
+				List result = new ArrayList();/*存储两个list的交集*/
+				for (Object arr : WordAndContainingFiles.get(sourceWordW1)) {//遍历list1
+					if (WordAndContainingFiles.get(queryWordW2).contains(arr)) {//如果存在这个数
+						result.add(arr);//放进一个list里面，这个list就是交集
+					}
+				}
+				int tmp= result.size();				
+				int countD1D2 = sourceContainsUseCaseWord ? tmp : 0;
+
+				// d1 and d2 will never be 0, d1d2 however can be
+				double ngd = (countD1D2 == 0) ? 0 : ComputenNgd(countD1, countD2, countD1D2, logD);
+
+				ngdDictionary.put(sourceWordW1, ngd);
+			}
+			ngdMatrix.put(queryWordW2, ngdDictionary);
+		}
+		
+		ArrayList<String> distinctQueryWordListForTss = new ArrayList<String>();
+		for(int i=0;i<fileText.size();i++){
+			if(!distinctQueryWordList.contains(fileText.get(i)))/*去重*/
+				distinctQueryWordList.add(fileText.get(i));
+		}
+		int totalNumberOfDocumentInSource = CodeFilesWithContent.size();
+		
+		for (Map.Entry<String, ArrayList<String>> sourceFileWithWords : CodeFilesWithContent.entrySet()){
+			ArrayList<String> distinctSourceWords = new ArrayList<String>();
+			for(int i=0;i<sourceFileWithWords.getValue().size();i++){
+				if(!distinctQueryWordList.contains(fileText.get(i)))/*去重*/
+					distinctQueryWordList.add(fileText.get(i));
+			}
+			
+			double sumQueryTimeIdf = 0.0;
+			double sumQueryIdf = 0.0;
+
+			for (String queryWord : distinctQueryWordListForTss){
+				double maxSim = -1;
+				for (String sourceWord : distinctSourceWords){
+					double currentNgd = ngdMatrix.get(queryWord).get(sourceWord);
+					if (maxSim < currentNgd){
+						maxSim = currentNgd;
+					}
+				}
+
+				// if term does not occur in any corpus then its only in use case hence 1
+				double idf = 0;
+				if (WordAndContainingFiles.containsKey(queryWord)){
+					idf = Math.log10((double)totalNumberOfDocumentInSource / WordAndContainingFiles.get(queryWord).size());
+				}
+				sumQueryIdf += idf;
+				sumQueryTimeIdf += (maxSim * idf);
+			}
+
+			double sumCorpusTimeIdf = 0.0;
+			double sumCorpusIdf = 0.0;
+
+			for (String sourceWord : distinctSourceWords){
+				double maxSim = -1;
+				for (String queryWord : distinctQueryWordListForTss){
+					double currentNgd = ngdMatrix.get(queryWord).get(sourceWord);
+					if (maxSim < currentNgd){
+						maxSim = currentNgd;
+					}
+				}
+
+				// sourceWord has to be in IdfDictionary
+				double idf = Math.log10((double)totalNumberOfDocumentInSource / WordAndContainingFiles.get(sourceWord).size());
+
+				sumCorpusIdf += idf;
+				sumCorpusTimeIdf += (maxSim * idf);
+			}
+
+			double tss = (1.0 / 2) * ((sumQueryTimeIdf / sumQueryIdf) + (sumCorpusTimeIdf / sumCorpusIdf));
+			tssDocumentDictionary.put(sourceFileWithWords.getKey(), tss);
+		}
+		
+		WriteDocumentVectorToFileOrderedDescending(ngdOutputFolderPath + NgdFileName, tssDocumentDictionary);
+
+		Utility.Status("Completed NGD: " + bugName);
+		
+    }
+    
+	private static double ComputenNgd(double d1, double d2, double d1D2, double logD)
+	{
+		double logD1 = Math.log10(d1);
+		double logD2 = Math.log10(d2);
+		double logD1D2 = Math.log10(d1D2);
+
+		double upper = Math.max(logD1, logD2) - logD1D2;
+		double lower = logD - Math.min(logD1, logD2);
+		double ngd = upper / lower;
+
+		return Math.pow(Math.E, -2 * ngd);
+	}
+    /*NGD end*/
+    
+    /*PMI start*/
+    private static final HashMap<String, ArrayList<String>> WordAndContainingFiles = new HashMap<String, ArrayList<String>>();
+    
+    private static void InitializeForNgdPmi(){
+    	
+    	Iterator it = CodeFilesWithContent.keySet().iterator();   
+		while(it.hasNext()){
+			String key=(String) it.next();
+			ArrayList<String> wordlist=new ArrayList<String>();
+			for(int i=0;i<CodeFilesWithContent.get(key).size();i++)
+				wordlist.add(CodeFilesWithContent.get(key).get(i));
+			for(int i=0;i<wordlist.size();i++){
+				if (!WordAndContainingFiles.containsKey(wordlist.get(i)))
+				{
+					WordAndContainingFiles.put(wordlist.get(i), new ArrayList<String>());
+				}
+				WordAndContainingFiles.get(wordlist.get(i)).add(key);
+			}
+		}
+		
+	}
+    
+    private static void ComputePmi(String pmiOutputFolderPath, String reqName, ArrayList<String> reqText){
+    	Utility.Status("Creating Pmi: " + reqName);
+    	
+		if ((new File(pmiOutputFolderPath + PmiFileName)).isFile()){
+			Utility.Status("Pmi File Exists.");
+			return;
+		}
+
+		/* Create list of word contained in query*/
+		ArrayList<String> distinctReqWordList = new ArrayList<String>();
+		for(int i=0;i<reqText.size();i++){
+			if(!distinctReqWordList.contains(reqText.get(i)))/*去重*/
+				distinctReqWordList.add(reqText.get(i));
+		}
+		DocumentDictionaryAny<MyDoubleDictionary> nPmiMatrix = new DocumentDictionaryAny<MyDoubleDictionary>();
+		int n = CodeFilesWithContent.size();
+		
+		/* Compute pmi for each word in WordAndContainingFiles and unique words in query*/
+		for (String reqWordW2 : distinctReqWordList){
+			MyDoubleDictionary nPmiDictionary = new MyDoubleDictionary();
+
+			for (String sourceWordW1 : WordAndContainingFiles.keySet()){
+				boolean sourceContainsUseCaseWord = WordAndContainingFiles.containsKey(reqWordW2);
+				
+				int countW1 = WordAndContainingFiles.get(sourceWordW1).size();
+				//double averageCountW1Files = _wordAndContainingFiles[sourceWordW1].Select(x => _codeFilesWithContent[x].Count).Average();
+				int countW2 = sourceContainsUseCaseWord ? WordAndContainingFiles.get(reqWordW2).size() : 0;
+				//double averageCountW2Files = sourceContainsUseCaseWord ? _wordAndContainingFiles[reqWordW2].Select(x => _codeFilesWithContent[x].Count).Average() : 0;
+				
+				// if query contains source then add 1 (query contains usecase word + source word
+				// if source contains query word find the intersection of files containing both words
+				List result = new ArrayList();/*存储两个list的交集*/
+				for (Object arr : WordAndContainingFiles.get(sourceWordW1)) {//遍历list1
+					if (WordAndContainingFiles.get(reqWordW2).contains(arr)) {//如果存在这个数
+						result.add(arr);//放进一个list里面，这个list就是交集
+					}
+				}
+				int tmp= result.size();
+				int countW1W2 = sourceContainsUseCaseWord ? tmp : 0;
+				//double averageCountW1W2Files = sourceContainsUseCaseWord ? _wordAndContainingFiles[sourceWordW1].Intersect(_wordAndContainingFiles[reqWordW2]).Select(x => _codeFilesWithContent[x].Count).Average() : 0;
+				
+				// d1 and d2 will never be 0, d1d2 however can be
+				double nPmi;
+				if (countW1W2 == 0){
+					// no cooccurence
+					nPmi = -1;
+				}else{
+					if (countW1 == countW1W2 && countW2 == countW1W2){
+						nPmi = 1;
+					}else{
+						nPmi = (Math.log10((double)countW1 / n * countW2 / n) / Math.log10((double)countW1W2 / n) - 1) * ((double)countW1W2 / CodeFilesWithContent.size());
+					}
+				}
+				nPmiDictionary.put(sourceWordW1, nPmi);
+			}
+			nPmiMatrix.put(reqWordW2, nPmiDictionary);
+		}
+		
+		MyDoubleDictionary tssDocumentDictionary = GetTssAltered(reqText, nPmiMatrix, -1);
+
+		WriteDocumentVectorToFileOrderedDescending(pmiOutputFolderPath + PmiFileName, tssDocumentDictionary);
+
+		Utility.Status("Completed APm: " + reqName);
+		
+    }
+    
+    private static MyDoubleDictionary GetTssAltered(ArrayList<String> reqFileText, DocumentDictionaryAny<MyDoubleDictionary> simMatrix, double noMatch){
+    	MyDoubleDictionary tssDocumentDictionary = new MyDoubleDictionary();
+		HashMap<String, Double> reqTfDictionary = new HashMap<String, Double>();
+		
+		for(String reqWord:reqFileText){
+			if (!reqTfDictionary.containsKey(reqWord)){
+				reqTfDictionary.put(reqWord, (double) 0);
+			}
+			reqTfDictionary.put(reqWord, reqTfDictionary.get(reqWord) + 1);
+		}
+		
+		ArrayList<String> reqWordListForTss = new ArrayList<String>();
+		for(int i=0;i<reqFileText.size();i++){
+			reqWordListForTss.add(reqFileText.get(i));
+		}
+		int totalNumberOfDocumentInSource = CodeFilesWithContent.size();
+		
+		for (Map.Entry<String, ArrayList<String>> sourceFileWithWords : CodeFilesWithContent.entrySet())
+		{
+			ArrayList<String> sourceWords = new ArrayList<String>();
+			for(int i=0;i<sourceFileWithWords.getValue().size();i++){
+				sourceWords.add(sourceFileWithWords.getValue().get(i));
+			}
+			double sumReqTimeIdf = 0.0;
+			double sumReqIdf = 0.0;
+
+			for (String reqWord : reqWordListForTss){
+				double maxSim = -1;
+				for (String sourceWord : sourceWords){
+					double currentSim = GetSim(reqWord, sourceWord, simMatrix, noMatch);
+					if (maxSim < currentSim){
+						maxSim = currentSim;
+					}
+				}
+
+				// if term does not occur in any source then its only in use case hence 1
+				double idf = 0;
+				if (WordAndContainingFiles.containsKey(reqWord)){
+					idf = Math.log10((double)totalNumberOfDocumentInSource / WordAndContainingFiles.get(reqWord).size());
+				}
+
+				sumReqIdf += idf;
+				sumReqTimeIdf += (maxSim * idf);
+			}
+
+			double sumSourceTimeIdf = 0.0;
+			double sumSourceIdf = 0.0;
+
+			for (String sourceWord : sourceWords){
+				double maxSim = -1;
+				for (String reqWord : reqWordListForTss){
+					double currentSim = GetSim(reqWord, sourceWord, simMatrix, noMatch);
+					if (maxSim < currentSim){
+						maxSim = currentSim;
+					}
+				}
+
+				// sourceWord has to be in IdfDictionary
+				double idf = Math.log10((double)totalNumberOfDocumentInSource / WordAndContainingFiles.get(sourceWord).size());
+
+				sumSourceTimeIdf += (maxSim * idf);
+				sumSourceIdf += idf;
+			}
+
+			double tss = (1.0 / 2) * ((sumReqTimeIdf / sumReqIdf) + (sumSourceTimeIdf / sumSourceIdf));
+			tssDocumentDictionary.put(sourceFileWithWords.getKey(), tss);
+		}
+
+		return tssDocumentDictionary;
+    }
+    
+    private static double GetSim(String w1, String w2, DocumentDictionaryAny<MyDoubleDictionary> matrix, double noMatch){
+		if (matrix.containsKey(w1) && matrix.get(w1).containsKey(w2)){
+			return matrix.get(w1).get(w2);
+		}
+
+		if (matrix.containsKey(w2) && matrix.get(w2).containsKey(w1)){
+			return matrix.get(w2).get(w1);
+		}
+
+		return noMatch;
+	}
+    /*PMI end*/
 	
 	/*Writes vector to file ordered*/
 	public static void WriteDocumentVectorToFileOrderedDescending(String filePath, MyDoubleDictionary vector)

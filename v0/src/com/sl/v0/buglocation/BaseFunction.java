@@ -50,8 +50,11 @@ public class BaseFunction {
 	{
 		ArrayList<String> re=new ArrayList<String>();
 		String[] cur=text.split("[^a-zA-Z]+");
-		for(int i=0;i<cur.length;i++)
-			re.add(cur[i]);
+		for(int i=0;i<cur.length;i++){
+			String word=cur[i].toLowerCase();/*全转小写 去重*/
+			if(!re.contains(word))
+				re.add(word);
+		}
 		return re;
 	}
 	

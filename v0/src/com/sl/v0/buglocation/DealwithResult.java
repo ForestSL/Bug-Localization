@@ -45,11 +45,12 @@ public class DealwithResult {
 			
 			String[] con=content.get(i).split(" ");
 			String index=con[0];
-			String filePath=con[1];
+			String filePath=con[1];/*filePath为文件完整路径*/
 			String[] path=filePath.split("\\\\");
 			String file=path[path.length-1];
-			fileList.put(index,file);
+			fileList.put(index,file);/*索引-文件名*/
 			
+			/*TODO:若要将文件名改为文件路径 修改上下两行 将file改为filePath*/
 			GlobalVar.objs[i][0]=file;/*table赋值 文件名*/
 			for(int j=1;j<6;j++)
 				GlobalVar.objs[i][j]="0";
@@ -142,6 +143,7 @@ public class DealwithResult {
 		
 	}
 	
+	/*TODO:相似度只取前10作为bug文件 不合理 后续5种方法各有改进*/
 	public static void GetJsmResult(String dir){
 		List<File> bugs=new ArrayList<File>();
 		(new BaseFunction()).CheckFileName(dir,bugs);
@@ -168,11 +170,11 @@ public class DealwithResult {
 		}
 		
 		/*测试输出*/
-		Iterator it = JsmResult.keySet().iterator();   
-		while(it.hasNext()){
-			String key=(String) it.next();
-			System.out.println(key+" "+JsmResult.get(key));
-		}
+//		Iterator it = JsmResult.keySet().iterator();   
+//		while(it.hasNext()){
+//			String key=(String) it.next();
+//			System.out.println(key+" "+JsmResult.get(key));
+//		}
 	}
 	
 	public static void GetPmiResult(String dir){
@@ -241,6 +243,7 @@ public class DealwithResult {
 //		}
 	}
 	
+	/*TODO:LSI数据文件和其他不同 用其他方式处理*/
 	public static void GetLsiResult(String dir){
 		List<File> bugs=new ArrayList<File>();
 		(new BaseFunction()).CheckFileName(dir,bugs);

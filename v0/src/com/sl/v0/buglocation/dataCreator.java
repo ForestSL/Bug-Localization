@@ -52,6 +52,15 @@ public class DataCreator {
 	
 	public static void GetDatas(){
 		
+		/* Create a directory in eclipse saying Corpus*/
+		if ((new File(ReportFolderPath)).isDirectory()){
+			JOptionPane.showMessageDialog(null,"该版本已经生成corpus相关文件");
+			return;
+			//(new File(ReportFolderPath)).delete();
+		}
+		(new File(ReportFolderPath)).mkdirs();
+		(new File(CorpusFolderPath)).mkdirs();
+		
 		MyListTDictionary<File> javaFiles = new MyListTDictionary<File>();
 		JOptionPane.showMessageDialog(null,"读取项目java文件和bug报告xml文件中……");
 		GetFiles(FileFolderName,javaFiles);
@@ -69,13 +78,6 @@ public class DataCreator {
 				allIndexedFiles.put(f.get(i), index);
 			}
 		}
-		
-		/* Create a directory in eclipse saying Corpus*/
-		if ((new File(ReportFolderPath)).isDirectory()){
-			(new File(ReportFolderPath)).delete();
-		}
-		(new File(ReportFolderPath)).mkdirs();
-		(new File(CorpusFolderPath)).mkdirs();
 		
 		int corpusCounter = 1;
 		int totalCorpus = allIndexedFiles.size();
