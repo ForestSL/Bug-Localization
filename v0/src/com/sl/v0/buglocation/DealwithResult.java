@@ -17,12 +17,17 @@ import com.sl.v0.datas.GlobalVar;
 public class DealwithResult {
 	
 	public static final MyResultDictionary VsmResult=new MyResultDictionary();
+	public static final MyResultDictionary LsiResult=new MyResultDictionary();
+	public static final MyResultDictionary JsmResult=new MyResultDictionary();
+	public static final MyResultDictionary NgdResult=new MyResultDictionary();
+	public static final MyResultDictionary PmiResult=new MyResultDictionary();
 	public static final String FolderName = Utility.ReportFolderPath+GlobalVar.codeFolderName;
 	public static final HashMap<String,String> fileList=new HashMap<String,String>();
 	
+	/*测试用*/
 	public static void main(String args[]){
 		//GetVsmResult(FolderName);
-		boolean[] method={true,false,false,false,false};
+		boolean[] method={false,false,true,false,false};
 		execute(method);
 	} 
 	
@@ -50,10 +55,12 @@ public class DealwithResult {
 				GlobalVar.objs[i][j]="0";
 		}
 		
+		/*进行bug定位计算*/
+		(new Calculator()).Run(GlobalVar.codeFolderName,method);
+		
 		int index=0;
 		if(method[0]==true){/*VSM*/
 			index=1;
-			(new CalculatorVSM()).RunVSM(GlobalVar.codeFolderName);
 			JOptionPane.showMessageDialog(null,"获取VSM结果数据……");
 			GetVsmResult(FolderName);
 			/*table赋值*/
@@ -68,19 +75,203 @@ public class DealwithResult {
 			    }
 			}
 		}
-		if(method[1]==true){
+		if(method[1]==true){/*LSI*/
 			index=2;
+			JOptionPane.showMessageDialog(null,"获取LSI结果数据……");
+			GetLsiResult(FolderName);
+			/*table赋值*/
+			for(int i=0;i<fileCount;i++){
+				//System.out.println(GlobalVar.objs[i][0]);
+				List<String> tmp=new ArrayList<String>();
+				//System.out.println(VsmResult.size());
+			    tmp=LsiResult.get(GlobalVar.objs[i][0]);
+				//System.out.println(tmp.size());
+			    if(tmp!=null){
+			    	GlobalVar.objs[i][index]=tmp.size();
+			    }
+			}
 		}
-		if(method[2]==true){
+		if(method[2]==true){/*JSM*/
 			index=3;
+			JOptionPane.showMessageDialog(null,"获取JSM结果数据……");
+			GetJsmResult(FolderName);
+			/*table赋值*/
+			for(int i=0;i<fileCount;i++){
+				//System.out.println(GlobalVar.objs[i][0]);
+				List<String> tmp=new ArrayList<String>();
+				//System.out.println(VsmResult.size());
+			    tmp=JsmResult.get(GlobalVar.objs[i][0]);
+				//System.out.println(tmp.size());
+			    if(tmp!=null){
+			    	GlobalVar.objs[i][index]=tmp.size();
+			    }
+			}
 		}
-		if(method[3]==true){
+		if(method[3]==true){/*NGD*/
 			index=4;
+			JOptionPane.showMessageDialog(null,"获取NGD结果数据……");
+			GetNgdResult(FolderName);
+			/*table赋值*/
+			for(int i=0;i<fileCount;i++){
+				//System.out.println(GlobalVar.objs[i][0]);
+				List<String> tmp=new ArrayList<String>();
+				//System.out.println(VsmResult.size());
+			    tmp=NgdResult.get(GlobalVar.objs[i][0]);
+				//System.out.println(tmp.size());
+			    if(tmp!=null){
+			    	GlobalVar.objs[i][index]=tmp.size();
+			    }
+			}
 		}
-		if(method[4]==true){
+		if(method[4]==true){/*PMI*/
 			index=5;
+			JOptionPane.showMessageDialog(null,"获取PMI结果数据……");
+			GetPmiResult(FolderName);
+			/*table赋值*/
+			for(int i=0;i<fileCount;i++){
+				//System.out.println(GlobalVar.objs[i][0]);
+				List<String> tmp=new ArrayList<String>();
+				//System.out.println(VsmResult.size());
+			    tmp=PmiResult.get(GlobalVar.objs[i][0]);
+				//System.out.println(tmp.size());
+			    if(tmp!=null){
+			    	GlobalVar.objs[i][index]=tmp.size();
+			    }
+			}
 		}
 		
+	}
+	
+	public static void GetJsmResult(String dir){
+		List<File> bugs=new ArrayList<File>();
+		(new BaseFunction()).CheckFileName(dir,bugs);
+		//System.out.println(bugs.get(0).getAbsolutePath());
+		
+		for(int i=0;i<bugs.size();i++){
+			/*当前bug名*/
+			String bugName=bugs.get(i).getName();
+			String path=bugs.get(i).getAbsolutePath()+"\\Results\\Jsm.txt";
+			ArrayList<String> content=new ArrayList<String>();
+			/*当前bug对应的文件相似度*/
+			content=(new BaseFunction()).ReadAllLines(path);
+			int time=content.size();
+			if(content.size()>10){
+				time=10;/*暂时VSM只取相似度前10的文件*/
+			}
+			for(int j=0;j<time;j++){
+				//System.out.println(content.get(j));
+				String line=content.get(j);
+				String[] tmp=line.split(" ");
+				//System.out.println(tmp[0]);
+				JsmResult.Add(tmp[0], bugName, fileList);
+			}
+		}
+		
+		/*测试输出*/
+		Iterator it = JsmResult.keySet().iterator();   
+		while(it.hasNext()){
+			String key=(String) it.next();
+			System.out.println(key+" "+JsmResult.get(key));
+		}
+	}
+	
+	public static void GetPmiResult(String dir){
+		List<File> bugs=new ArrayList<File>();
+		(new BaseFunction()).CheckFileName(dir,bugs);
+		//System.out.println(bugs.get(0).getAbsolutePath());
+		
+		for(int i=0;i<bugs.size();i++){
+			/*当前bug名*/
+			String bugName=bugs.get(i).getName();
+			String path=bugs.get(i).getAbsolutePath()+"\\Results\\Pmi.txt";
+			ArrayList<String> content=new ArrayList<String>();
+			/*当前bug对应的文件相似度*/
+			content=(new BaseFunction()).ReadAllLines(path);
+			int time=content.size();
+			if(content.size()>10){
+				time=10;/*暂时VSM只取相似度前10的文件*/
+			}
+			for(int j=0;j<time;j++){
+				//System.out.println(content.get(j));
+				String line=content.get(j);
+				String[] tmp=line.split(" ");
+				//System.out.println(tmp[0]);
+				PmiResult.Add(tmp[0], bugName, fileList);
+			}
+		}
+		
+		/*测试输出*/
+//		Iterator it = PmiResult.keySet().iterator();   
+//		while(it.hasNext()){
+//			String key=(String) it.next();
+//			System.out.println(key+" "+PmiResult.get(key));
+//		}
+	}
+	
+	public static void GetNgdResult(String dir){
+		List<File> bugs=new ArrayList<File>();
+		(new BaseFunction()).CheckFileName(dir,bugs);
+		//System.out.println(bugs.get(0).getAbsolutePath());
+		
+		for(int i=0;i<bugs.size();i++){
+			/*当前bug名*/
+			String bugName=bugs.get(i).getName();
+			String path=bugs.get(i).getAbsolutePath()+"\\Results\\Ngd.txt";
+			ArrayList<String> content=new ArrayList<String>();
+			/*当前bug对应的文件相似度*/
+			content=(new BaseFunction()).ReadAllLines(path);
+			int time=content.size();
+			if(content.size()>10){
+				time=10;/*暂时VSM只取相似度前10的文件*/
+			}
+			for(int j=0;j<time;j++){
+				//System.out.println(content.get(j));
+				String line=content.get(j);
+				String[] tmp=line.split(" ");
+				//System.out.println(tmp[0]);
+				NgdResult.Add(tmp[0], bugName, fileList);
+			}
+		}
+		
+		/*测试输出*/
+//		Iterator it = NgdResult.keySet().iterator();   
+//		while(it.hasNext()){
+//			String key=(String) it.next();
+//			System.out.println(key+" "+NgdResult.get(key));
+//		}
+	}
+	
+	public static void GetLsiResult(String dir){
+		List<File> bugs=new ArrayList<File>();
+		(new BaseFunction()).CheckFileName(dir,bugs);
+		//System.out.println(bugs.get(0).getAbsolutePath());
+		
+		for(int i=0;i<bugs.size();i++){
+			/*当前bug名*/
+			String bugName=bugs.get(i).getName();
+			String path=bugs.get(i).getAbsolutePath()+"\\Results\\Lsi.txt";
+			ArrayList<String> content=new ArrayList<String>();
+			/*当前bug对应的文件相似度*/
+			content=(new BaseFunction()).ReadAllLines(path);
+			int time=content.size();
+			if(content.size()>10){
+				time=10;/*暂时VSM只取相似度前10的文件*/
+			}
+			for(int j=0;j<time;j++){
+				//System.out.println(content.get(j));
+				String line=content.get(j);
+				String[] tmp=line.split(" ");
+				//System.out.println(tmp[0]);
+				LsiResult.Add(tmp[0], bugName, fileList);
+			}
+		}
+		
+		/*测试输出*/
+//		Iterator it = LsiResult.keySet().iterator();   
+//		while(it.hasNext()){
+//			String key=(String) it.next();
+//			System.out.println(key+" "+LsiResult.get(key));
+//		}
 	}
 	
 	public static void GetVsmResult(String dir){

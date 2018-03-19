@@ -1,5 +1,7 @@
 package com.sl.v0.buglocation;
 
+/*VSM”√*/
+
 import java.util.Iterator;
 
 import com.sl.v0.buglocation.models.MyDoubleDictionary;
