@@ -12,7 +12,7 @@ public final class Utility{
 	public static final String MoreBugDatasetRelativeFolderPath = "moreBugs\\";
 	public static final String CommonErrorPathFile = "E:\\BugLocation\\Error.txt";
 
-	public static final ArrayList<Integer> LsiKs = new ArrayList<Integer>(Arrays.asList(new Integer[] {50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900}));
+	public static final ArrayList<Integer> LsiKs = new ArrayList<Integer>(Arrays.asList(new Integer[] {5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90}));
 
 	public static void Status(String text)
 	{

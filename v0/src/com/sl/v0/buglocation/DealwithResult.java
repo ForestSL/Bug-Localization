@@ -27,7 +27,7 @@ public class DealwithResult {
 	/*测试用*/
 	public static void main(String args[]){
 		//GetVsmResult(FolderName);
-		boolean[] method={false,false,true,false,false};
+		boolean[] method={false,false,false,false,true};
 		execute(method);
 	} 
 	
@@ -243,7 +243,6 @@ public class DealwithResult {
 //		}
 	}
 	
-	/*TODO:LSI数据文件和其他不同 用其他方式处理*/
 	public static void GetLsiResult(String dir){
 		List<File> bugs=new ArrayList<File>();
 		(new BaseFunction()).CheckFileName(dir,bugs);
@@ -252,7 +251,8 @@ public class DealwithResult {
 		for(int i=0;i<bugs.size();i++){
 			/*当前bug名*/
 			String bugName=bugs.get(i).getName();
-			String path=bugs.get(i).getAbsolutePath()+"\\Results\\Lsi.txt";
+			/*TODO:LSI设置不同k值得出不同的数据 此处假设都读取k=50的数据*/
+			String path=bugs.get(i).getAbsolutePath()+"\\Results\\Lsi\\90.txt";
 			ArrayList<String> content=new ArrayList<String>();
 			/*当前bug对应的文件相似度*/
 			content=(new BaseFunction()).ReadAllLines(path);

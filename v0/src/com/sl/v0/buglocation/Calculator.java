@@ -61,13 +61,13 @@ public class Calculator {
 		
 	public static void Run(String path,boolean[] method){
 		/*method[0-4]:VSM,LSI,JSM,NGD,PMI*/
-		runVSM=method[0];/*成功 计算速度正常*/
-		runLSI=method[1];/*TODO:转java代码*/
+		runVSM=method[0];/*成功 原始文件数计算速度正常 */
+		runLSI=method[1];/*文件5000多个 矩阵无法计算 JVM不够 所以5种方法演示以100个文件为例*/
 		/*JSM数据问题（已解决） hashmap存储new对象导致的数据覆盖 改用文件存储 也很慢 
 		 * 决定改用初始化和计算放到一起 边读边计算数据*/
-		runJSM=method[2];/*成功 计算速度略慢*/
-		runNGD=method[3];/*TODO:跑不动 一直不出结果*/
-		runPMI=method[4];/*TODO:跑不动 一直不出结果*/
+		runJSM=method[2];/*成功 原始文件数计算过慢 100文件测试速度正常*/
+		runNGD=method[3];/*成功 以100文件测试*/
+		runPMI=method[4];/*成功 以100文件测试*/
 		
 		String datasetFolderPath = Utility.ReportFolderPath+path;
 		String vsmCompletedFilePath = datasetFolderPath + VsmCompletedFile;
@@ -144,7 +144,11 @@ public class Calculator {
         List<File> allFiles = new ArrayList<File>();
         basefunction.GetFiles(datasetFolderPath + CorpusWithFilterFolderName,allFiles);
         int counter = 1;
-        for(int i=0;i<allFiles.size();i++){
+        /*TODO:为了方便演示项目 文件只读100个 演示计算结果*/
+        int time=allFiles.size();
+        if(allFiles.size()>100)
+        	time=100;
+        for(int i=0;i<time;i++){
             //Utility.Status("Reading " + (counter++) + " of " + allFiles.size());
             ArrayList<String> text = basefunction.ReadAllLines(allFiles.get(i).toString());
             CodeFilesWithContent.put(allFiles.get(i).toString(), text);
@@ -401,6 +405,9 @@ public class Calculator {
 				sourceMatrix[allSourceWordsWithIndex.get(fileWordWithTf)][fileIndex] = (fileNameWithTfDictionary.getValue()).get(fileWordWithTf);
 			}
 		}
+//		for(int i=0;i<sourceMatrix.length;i++)
+//			for(int j=0;j<sourceMatrix[i].length;j++)
+//				System.out.println(sourceMatrix[i][j]);
 		
 		// create matrix
 		Matrix generalMatrix = new Matrix(sourceMatrix);
@@ -415,10 +422,13 @@ public class Calculator {
 		
 		ArrayList<Integer> tmp=new ArrayList<Integer>();
 		for(int i=0;i<Utility.LsiKs.size();i++){
+			//System.out.println(svd.getS().getColumnDimension());
 			if(Utility.LsiKs.get(i)< svd.getS().getColumnDimension())
 				tmp.add(Utility.LsiKs.get(i));
 		}
 
+		//System.out.println(tmp.size());
+		
 		for(int i=0;i<tmp.size();i++){
 			int k=tmp.get(i);
 			Utility.Status("Creating k matrix of size " + k);
@@ -475,14 +485,39 @@ public class Calculator {
 			for(int i=0;i<qv.getColumnDimension();i++)
 				qDoubles.add(qv.get(0, i));
 
-//			Iterator it2 = allSourceFilesWithIndex.keySet().iterator();   
-//			while(it2.hasNext()){
-//				String doc=(String) it2.next();
-//				double tdouble=GetSimilarity(qDoubles, vkTranspose.ColVector(allSourceFilesWithIndex.get(doc)).ToArray().ToList());
-//			}
-//			HashMap<String,Integer> similarityList = allSourceFilesWithIndex.Select(doc -> new Map.Entry<String, Double>(doc.Key,tdouble ));
-//			
-//			File.WriteAllLines(outputFolderPath + LsiOutputFolderName + k + ".txt", similarityList.OrderByDescending(x -> x.Value).Select(x -> x.Key + " " + x.Value.toString("##.00000")));
+			HashMap<String,Double> similarityList=new HashMap<String,Double>();
+			Iterator it2 = allSourceFilesWithIndex.keySet().iterator();   
+			while(it2.hasNext()){
+				String doc=(String) it2.next();
+				List<Double> list=new ArrayList<Double>();
+				for(int i=0;i<vkTranspose.getArray().length;i++)
+					list.add(vkTranspose.getArray()[i][allSourceFilesWithIndex.get(doc)]);
+				
+				double tdouble=GetSimilarity(qDoubles, list);
+				similarityList.put(doc,tdouble);
+			}
+			
+			ArrayList<String> content=new ArrayList<String>();
+			
+			boolean asInt = false;
+	        String pattern = asInt ? "##" : "##.00000";
+	        /*将vector.entrySet()转换成list*/  
+	        List<Map.Entry<String, Double>> list = new ArrayList<Map.Entry<String, Double>>(similarityList.entrySet());  
+	        Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {  
+	            /*按value降序排序*/  
+	            @Override  
+	            public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {   
+	                return o2.getValue().compareTo(o1.getValue());  
+	            }  
+	        }); 	        
+	        for(int i=0;i<list.size();i++){
+	        	String key=list.get(i).getKey();
+	        	Double value=list.get(i).getValue();
+	        	String.format(pattern, value);
+	        	content.add(key+" "+value);
+	        }
+	        //System.out.println(k);
+			basefunction.WriteAllLines(outputFolderPath + LsiOutputFolderName + k + ".txt", content);
 		}
 
 		Utility.Status("Completed LSI: " + bugName);		
@@ -634,10 +669,13 @@ public class Calculator {
 				int countD2 = sourceContainsUseCaseWord ? WordAndContainingFiles.get(queryWordW2).size() : 0;
 				// if query contains source then add 1 (query contains usecase word + source word
 				// if source contains query word find the intersection of files containing both words
-				List result = new ArrayList();/*存储两个list的交集*/
-				for (Object arr : WordAndContainingFiles.get(sourceWordW1)) {//遍历list1
-					if (WordAndContainingFiles.get(queryWordW2).contains(arr)) {//如果存在这个数
-						result.add(arr);//放进一个list里面，这个list就是交集
+				List<String> result = new ArrayList<String>();/*存储两个list的交集*/
+				for (String arr : WordAndContainingFiles.get(sourceWordW1)) {//遍历list1
+					//System.out.println(arr);
+					if(WordAndContainingFiles.get(queryWordW2)!=null){
+						if (WordAndContainingFiles.get(queryWordW2).contains(arr)) {//如果存在这个数
+							result.add(arr);//放进一个list里面，这个list就是交集
+						}
 					}
 				}
 				int tmp= result.size();				
@@ -653,16 +691,20 @@ public class Calculator {
 		
 		ArrayList<String> distinctQueryWordListForTss = new ArrayList<String>();
 		for(int i=0;i<fileText.size();i++){
-			if(!distinctQueryWordList.contains(fileText.get(i)))/*去重*/
-				distinctQueryWordList.add(fileText.get(i));
+			//if(!distinctQueryWordListForTss.contains(fileText.get(i)))/*去重*/
+				distinctQueryWordListForTss.add(fileText.get(i));
 		}
+		
 		int totalNumberOfDocumentInSource = CodeFilesWithContent.size();
 		
 		for (Map.Entry<String, ArrayList<String>> sourceFileWithWords : CodeFilesWithContent.entrySet()){
 			ArrayList<String> distinctSourceWords = new ArrayList<String>();
-			for(int i=0;i<sourceFileWithWords.getValue().size();i++){
-				if(!distinctQueryWordList.contains(fileText.get(i)))/*去重*/
-					distinctQueryWordList.add(fileText.get(i));
+			//System.out.println(sourceFileWithWords);
+			if(CodeFilesWithContent.get(sourceFileWithWords.getKey())!=null){
+				for(int i=0;i<CodeFilesWithContent.get(sourceFileWithWords.getKey()).size();i++){
+					//if(!distinctSourceWords.contains(fileText.get(i)))/*去重*/
+						distinctSourceWords.add(CodeFilesWithContent.get(sourceFileWithWords.getKey()).get(i));
+				}
 			}
 			
 			double sumQueryTimeIdf = 0.0;
@@ -670,12 +712,19 @@ public class Calculator {
 
 			for (String queryWord : distinctQueryWordListForTss){
 				double maxSim = -1;
+				//System.out.println(distinctSourceWords.size());/*错误：输出为空*/
 				for (String sourceWord : distinctSourceWords){
-					double currentNgd = ngdMatrix.get(queryWord).get(sourceWord);
-					if (maxSim < currentNgd){
-						maxSim = currentNgd;
+					if(ngdMatrix.get(queryWord)!=null){
+						if(ngdMatrix.get(queryWord).get(sourceWord)!=null){
+							double currentNgd = ngdMatrix.get(queryWord).get(sourceWord);
+							//System.out.println(currentNgd);
+							if (maxSim < currentNgd){
+								maxSim = currentNgd;
+							}
+						}
 					}
 				}
+				//System.out.println(maxSim);
 
 				// if term does not occur in any corpus then its only in use case hence 1
 				double idf = 0;
@@ -692,20 +741,33 @@ public class Calculator {
 			for (String sourceWord : distinctSourceWords){
 				double maxSim = -1;
 				for (String queryWord : distinctQueryWordListForTss){
-					double currentNgd = ngdMatrix.get(queryWord).get(sourceWord);
-					if (maxSim < currentNgd){
-						maxSim = currentNgd;
+					if(ngdMatrix.get(queryWord)!=null){
+						if(ngdMatrix.get(queryWord).get(sourceWord)!=null){
+							double currentNgd = ngdMatrix.get(queryWord).get(sourceWord);
+							if (maxSim < currentNgd){
+								maxSim = currentNgd;
+							}
+						}
 					}
 				}
 
 				// sourceWord has to be in IdfDictionary
-				double idf = Math.log10((double)totalNumberOfDocumentInSource / WordAndContainingFiles.get(sourceWord).size());
+				if(WordAndContainingFiles.get(sourceWord)!=null){
+					double idf = Math.log10((double)totalNumberOfDocumentInSource / WordAndContainingFiles.get(sourceWord).size());
 
-				sumCorpusIdf += idf;
-				sumCorpusTimeIdf += (maxSim * idf);
+					sumCorpusIdf += idf;
+					sumCorpusTimeIdf += (maxSim * idf);
+				}
 			}
+			
+//			System.out.println(sumQueryTimeIdf);
+//			System.out.println(sumQueryIdf);
+//			System.out.println(sumCorpusTimeIdf);
+//			System.out.println(sumCorpusIdf);
+//			System.out.println("-------------------------------");
 
 			double tss = (1.0 / 2) * ((sumQueryTimeIdf / sumQueryIdf) + (sumCorpusTimeIdf / sumCorpusIdf));
+			//System.out.println(tss);
 			tssDocumentDictionary.put(sourceFileWithWords.getKey(), tss);
 		}
 		
@@ -784,8 +846,10 @@ public class Calculator {
 				// if source contains query word find the intersection of files containing both words
 				List result = new ArrayList();/*存储两个list的交集*/
 				for (Object arr : WordAndContainingFiles.get(sourceWordW1)) {//遍历list1
-					if (WordAndContainingFiles.get(reqWordW2).contains(arr)) {//如果存在这个数
-						result.add(arr);//放进一个list里面，这个list就是交集
+					if(WordAndContainingFiles.get(reqWordW2)!=null){
+						if (WordAndContainingFiles.get(reqWordW2).contains(arr)) {//如果存在这个数
+							result.add(arr);//放进一个list里面，这个list就是交集
+						}
 					}
 				}
 				int tmp= result.size();
