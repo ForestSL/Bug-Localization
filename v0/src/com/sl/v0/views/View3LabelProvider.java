@@ -7,7 +7,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.LabelProviderChangedEvent;
 import org.eclipse.swt.graphics.Image;
 
-import com.sl.v0.datas.TableCell;
+import com.sl.v0.buglocation.datas.Bug;
 
 public class View3LabelProvider  implements ILabelProvider{
 
@@ -18,12 +18,7 @@ public class View3LabelProvider  implements ILabelProvider{
 
 	    public String getText(Object element) {
 	        // TODO Auto-generated method stub
-	    	String re="未选中!";
-	    	if(((TableCell)element).getMethod()==null||((TableCell)element).getMethod()=="文件")
-	    		return re;
-	    	//re=">>>点击此处>>>"+"查看"+((TableCell)element).getFile()+"在"+((TableCell)element).getMethod()+"方法下定位的详细bug信息";
-	    	re="详情";
-	    	return re;
+	    	return ((Bug) element).getBugId();
 	    }
 
 	    public void addListener(ILabelProviderListener listener) {

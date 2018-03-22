@@ -9,12 +9,13 @@ import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Table;
 
+import com.sl.v0.buglocation.datas.Bug;
+import com.sl.v0.buglocation.datas.BugModel;
 import com.sl.v0.datas.TableCell;
-import com.sl.v0.datas.TableCellModel;
 
 public class View3ContentProvider implements IStructuredContentProvider{
 
-	  TableCellModel input;
+	  BugModel input;
 	  ListViewer viewer;
 	  
 	  public Object[] getElements(Object inputElement) {
@@ -23,17 +24,12 @@ public class View3ContentProvider implements IStructuredContentProvider{
 	  }
 	  
 	  public String getText(Object element) {
-		  String re="未选中!";
-		  if(((TableCell)element).getMethod()==null||((TableCell)element).getMethod()=="文件")
-			  return re;
-		  //re=">>>点击此处>>>"+"查看"+((TableCell)element).getFile()+"在"+((TableCell)element).getMethod()+"方法下定位的详细bug信息";
-	      re="详情";
-		  return re;
+		  return ((Bug) element).getBugId();
 	  }
 	  
 	  public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		  viewer = (ListViewer) viewer;
-		  input = (TableCellModel) newInput;
+		  input = (BugModel) newInput;
 	    
 	  }
 	  

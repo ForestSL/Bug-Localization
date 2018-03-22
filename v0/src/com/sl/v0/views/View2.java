@@ -25,6 +25,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
@@ -47,10 +48,10 @@ import org.eclipse.ui.part.ViewPart;
 
 import com.sl.v0.buglocation.DataCreator;
 import com.sl.v0.buglocation.DealwithResult;
+import com.sl.v0.buglocation.datas.BugModel;
 import com.sl.v0.datas.Choice;
 import com.sl.v0.datas.GlobalVar;
 import com.sl.v0.datas.TableCell;
-import com.sl.v0.datas.TableCellModel;
 import com.sl.v0.swt.SWTResourceManager;
 import com.sl.v0.editors.*;
 
@@ -92,6 +93,7 @@ public class View2 extends ViewPart {
     			
 				/*根据勾选的方法进行bug定位 更新全局变量中table数据*/
 				(new DealwithResult()).execute(GlobalVar.isMethod);
+				//System.out.println(GlobalVar.objs[1][1]);
 				
 				/*运行填充数据到表格*/
 				table.removeAll();
@@ -100,8 +102,10 @@ public class View2 extends ViewPart {
 		        	item = new TableItem(table, SWT.NONE);   
 		        	item.setText(0, row + 1 + "");   
 		        	for (int col = 0; col < table.getColumnCount() ; col++) {    
-		        		if (GlobalVar.objs[row][col] != null)     
-		        			item.setText(col, GlobalVar.objs[row][col].toString());          		
+		        		if (GlobalVar.objs[row][col] != null){     
+		        			//System.out.println(GlobalVar.objs[row][col]);
+		        			item.setText(col, GlobalVar.objs[row][col]);          		
+		        		}
 		        	}
 		        }
     		
@@ -130,7 +134,7 @@ public class View2 extends ViewPart {
         /*格式布局*/
         RowLayout rowLayout = new RowLayout();
         rowLayout.type=SWT.VERTICAL; 
-        topComp.setLayout(rowLayout);
+        topComp.setLayout(new FillLayout());
         
         /*添加工具栏：定位方法勾选*/
         createActions();
@@ -138,7 +142,7 @@ public class View2 extends ViewPart {
         initializeMenu(); 
                
         /*table数据正倒序排序*/
-        table = new Table(topComp,  SWT.BORDER);  
+        table = new Table(topComp,  SWT.BORDER| SWT.V_SCROLL | SWT.H_SCROLL);  
         table.setHeaderVisible(true);
         table.setLinesVisible(true);
         table.setLayoutData(new RowData(650, 100));  
@@ -162,45 +166,26 @@ public class View2 extends ViewPart {
         }
         
         /*视图间消息传递(多加一个视图，因为无法在table上监听)*/
-    	listViewer = new ListViewer(topComp,SWT.BORDER);
+    	listViewer = new ListViewer(topComp,SWT.BORDER| SWT.V_SCROLL | SWT.H_SCROLL);
     	listViewer.setLabelProvider(new View3LabelProvider());
     	listViewer.setContentProvider(new View3ContentProvider());
-    	listViewer.setInput(new TableCellModel());    	
+    	listViewer.setInput(new BugModel());    	
     	this.getSite().setSelectionProvider(listViewer);
         
         /*排序操作*/
-        int[] flag={0,0,0,0,0,0};/*标记当前列排序状态，1：正序 0：未排序 -1：倒序*/
-        /*循环写法报错，关于调用排序时i的问题*/
-//        for(int i=0;i<columns.length;i++){
-//        	table.getColumn(i).addSelectionListener(new SelectionAdapter(){
-//            	public void widgetSelected(SelectionEvent e){
-//            		//调用排序文件，处理排序
-//            		int cur=flag[i];/*记录当前列标记*/
-//            		for(int i=0;i<flag.length;i++)
-//            			flag[i]=0;/*清空其他列标记*/
-//            		if(cur==0||cur==-1){/*未排序或为倒序*/
-//            			new TableColumnSorter().addSorter(table, table.getColumn(i));
-//            			flag[i]=1;
-//            		}else{/*为正序*/
-//            			new TableColumnSorter().removeSorter(table, table.getColumn(i));
-//            			flag[i]=-1;
-//            		}
-//            	}
-//            });
-//        }
-               
+        int[] flag={0,0,0,0,0,0};/*标记当前列排序状态，1：正序 0：未排序 -1：倒序*/               
         table.getColumn(1).addSelectionListener(new SelectionAdapter(){
         	public void widgetSelected(SelectionEvent e){
         		//调用排序文件，处理排序
         		int cur=flag[1];/*记录当前列标记*/
         		for(int i=0;i<flag.length;i++)
         			flag[i]=0;/*清空其他列标记*/
-        		if(cur==0||cur==-1){/*未排序或为倒序*/
-        			new TableColumnSorter().addSorter(table, table.getColumn(1));
-        			flag[1]=1;
-        		}else{/*为正序*/
+        		if(cur==0||cur==1){/*未排序或为正序*/
         			new TableColumnSorter().removeSorter(table, table.getColumn(1));
         			flag[1]=-1;
+        		}else{/*为倒序*/
+        			new TableColumnSorter().addSorter(table, table.getColumn(1));
+        			flag[1]=1;
         		}
         	}
         });
@@ -210,12 +195,12 @@ public class View2 extends ViewPart {
         		int cur=flag[2];/*记录当前列标记*/
         		for(int i=0;i<flag.length;i++)
         			flag[i]=0;/*清空其他列标记*/
-        		if(cur==0||cur==-1){/*未排序或为倒序*/
-        			new TableColumnSorter().addSorter(table, table.getColumn(2));
-        			flag[2]=1;
-        		}else{/*为正序*/
+        		if(cur==0||cur==1){
         			new TableColumnSorter().removeSorter(table, table.getColumn(2));
         			flag[2]=-1;
+        		}else{
+        			new TableColumnSorter().addSorter(table, table.getColumn(2));
+        			flag[2]=1;
         		}
         	}
         });
@@ -225,12 +210,12 @@ public class View2 extends ViewPart {
         		int cur=flag[3];/*记录当前列标记*/
         		for(int i=0;i<flag.length;i++)
         			flag[i]=0;/*清空其他列标记*/
-        		if(cur==0||cur==-1){/*未排序或为倒序*/
-        			new TableColumnSorter().addSorter(table, table.getColumn(3));
-        			flag[3]=1;
-        		}else{/*为正序*/
+        		if(cur==0||cur==1){
         			new TableColumnSorter().removeSorter(table, table.getColumn(3));
         			flag[3]=-1;
+        		}else{
+        			new TableColumnSorter().addSorter(table, table.getColumn(3));
+        			flag[3]=1;
         		}
         	}
         });
@@ -240,12 +225,12 @@ public class View2 extends ViewPart {
         		int cur=flag[4];/*记录当前列标记*/
         		for(int i=0;i<flag.length;i++)
         			flag[i]=0;/*清空其他列标记*/
-        		if(cur==0||cur==-1){/*未排序或为倒序*/
-        			new TableColumnSorter().addSorter(table, table.getColumn(4));
-        			flag[4]=1;
-        		}else{/*为正序*/
+        		if(cur==0||cur==1){
         			new TableColumnSorter().removeSorter(table, table.getColumn(4));
         			flag[4]=-1;
+        		}else{
+        			new TableColumnSorter().addSorter(table, table.getColumn(4));
+        			flag[4]=1;
         		}
         	}
         });
@@ -255,58 +240,16 @@ public class View2 extends ViewPart {
         		int cur=flag[5];/*记录当前列标记*/
         		for(int i=0;i<flag.length;i++)
         			flag[i]=0;/*清空其他列标记*/
-        		if(cur==0||cur==-1){/*未排序或为倒序*/
-        			new TableColumnSorter().addSorter(table, table.getColumn(5));
-        			flag[5]=1;
-        		}else{/*为正序*/
+        		if(cur==0||cur==1){
         			new TableColumnSorter().removeSorter(table, table.getColumn(5));
         			flag[5]=-1;
+        		}else{
+        			new TableColumnSorter().addSorter(table, table.getColumn(5));
+        			flag[5]=1;
         		}
         	}
         });
         /*排序操作结束*/
-        
-
-        /*鼠标单击事件：显示具体bug信息*/
-        //final TableCursor cursor = new TableCursor(table, SWT.NONE);
-        table.addMouseListener(new MouseAdapter(){
-        	@Override
-            public void mouseDown(MouseEvent e) {
-        		
-//        		int i = table.getSelectionIndex();
-//        		int j = cursor.getColumn();
-//        		//System.out.println(i+" "+j);
-        		
-        		/*获得单元格的位置*/
-        		TableItem[] items = table.getItems();
-        		Point pt = new Point(e.x, e.y);
-        		for (int i = 0; i < items.length; i++) {
-        			for (int j = 0; j < table.getColumnCount(); j++) {
-        				Rectangle rect = items[i].getBounds(j);
-        				if (rect.contains(pt)) {
-        					/*获取列名（方法名）*/
-        					String method=GlobalVar.columns[j];
-        					GlobalVar.cell.setMethod(method);
-        					/*获取行名（文件名）*/
-        					TableItem item = table.getItem(i);
-        					String file = item.getText(0);/*由于行排序后变化，所以每次取指定行第一个单元格数据*/
-        					GlobalVar.cell.setFile(file);
-        					String data = item.getText(j);
-        					GlobalVar.cell.setCount(data);
-        	
-        					//System.out.println("此处详细展示"+file+"文件通过"+method+"方法定位的bug结果,bug数为"+data );
-        				
-        					/*更新选中值*/
-        					listViewer.setInput(new TableCellModel());  
-        					
-        					/*设置选中单元格背景色*/
-        					//item.setBackground(j,SWTResourceManager.getColor(SWT.COLOR_BLUE));
-        				}
-        			}
-        		}
-             
-        	}
-        });
         
         /*鼠标双击事件：编辑器打开文件*/
         table.addMouseListener(new MouseAdapter() {
@@ -381,6 +324,9 @@ public class View2 extends ViewPart {
         
         /* 如果单击确定按钮，则将值保存到Choice对象中*/
         protected void buttonPressed(int buttonId) {
+        	/*更新最新的bug列表*/
+        	listViewer.setInput(new BugModel()); 
+        	
             if (buttonId == IDialogConstants.OK_ID) {
                 if (choice == null)
                      choice = new Choice();
@@ -429,12 +375,12 @@ public class View2 extends ViewPart {
             		int cur=flag[1];/*记录当前列标记*/
             		for(int i=0;i<flag.length;i++)
             			flag[i]=0;/*清空其他列标记*/
-            		if(cur==0||cur==-1){/*未排序或为倒序*/
-            			new TableColumnSorter().addSorter(table, table.getColumn(1));
-            			flag[1]=1;
-            		}else{/*为正序*/
+            		if(cur==0||cur==1){
             			new TableColumnSorter().removeSorter(table, table.getColumn(1));
             			flag[1]=-1;
+            		}else{
+            			new TableColumnSorter().addSorter(table, table.getColumn(1));
+            			flag[1]=1;
             		}
             	}
             });
@@ -444,12 +390,12 @@ public class View2 extends ViewPart {
             		int cur=flag[2];/*记录当前列标记*/
             		for(int i=0;i<flag.length;i++)
             			flag[i]=0;/*清空其他列标记*/
-            		if(cur==0||cur==-1){/*未排序或为倒序*/
-            			new TableColumnSorter().addSorter(table, table.getColumn(2));
-            			flag[2]=1;
-            		}else{/*为正序*/
+            		if(cur==0||cur==1){
             			new TableColumnSorter().removeSorter(table, table.getColumn(2));
             			flag[2]=-1;
+            		}else{
+            			new TableColumnSorter().addSorter(table, table.getColumn(2));
+            			flag[2]=1;
             		}
             	}
             });
@@ -459,12 +405,12 @@ public class View2 extends ViewPart {
             		int cur=flag[3];/*记录当前列标记*/
             		for(int i=0;i<flag.length;i++)
             			flag[i]=0;/*清空其他列标记*/
-            		if(cur==0||cur==-1){/*未排序或为倒序*/
-            			new TableColumnSorter().addSorter(table, table.getColumn(3));
-            			flag[3]=1;
-            		}else{/*为正序*/
+            		if(cur==0||cur==1){
             			new TableColumnSorter().removeSorter(table, table.getColumn(3));
             			flag[3]=-1;
+            		}else{
+            			new TableColumnSorter().addSorter(table, table.getColumn(3));
+            			flag[3]=1;
             		}
             	}
             });
@@ -474,12 +420,12 @@ public class View2 extends ViewPart {
             		int cur=flag[4];/*记录当前列标记*/
             		for(int i=0;i<flag.length;i++)
             			flag[i]=0;/*清空其他列标记*/
-            		if(cur==0||cur==-1){/*未排序或为倒序*/
-            			new TableColumnSorter().addSorter(table, table.getColumn(4));
-            			flag[4]=1;
-            		}else{/*为正序*/
+            		if(cur==0||cur==1){
             			new TableColumnSorter().removeSorter(table, table.getColumn(4));
             			flag[4]=-1;
+            		}else{
+            			new TableColumnSorter().addSorter(table, table.getColumn(4));
+            			flag[4]=1;
             		}
             	}
             });
@@ -489,12 +435,12 @@ public class View2 extends ViewPart {
             		int cur=flag[5];/*记录当前列标记*/
             		for(int i=0;i<flag.length;i++)
             			flag[i]=0;/*清空其他列标记*/
-            		if(cur==0||cur==-1){/*未排序或为倒序*/
-            			new TableColumnSorter().addSorter(table, table.getColumn(5));
-            			flag[5]=1;
-            		}else{/*为正序*/
+            		if(cur==0||cur==1){
             			new TableColumnSorter().removeSorter(table, table.getColumn(5));
             			flag[5]=-1;
+            		}else{
+            			new TableColumnSorter().addSorter(table, table.getColumn(5));
+            			flag[5]=1;
             		}
             	}
             });

@@ -144,10 +144,12 @@ public class Calculator {
         List<File> allFiles = new ArrayList<File>();
         basefunction.GetFiles(datasetFolderPath + CorpusWithFilterFolderName,allFiles);
         int counter = 1;
+        
         /*TODO:为了方便演示项目 文件只读100个 演示计算结果*/
         int time=allFiles.size();
         if(allFiles.size()>100)
         	time=100;
+        
         for(int i=0;i<time;i++){
             //Utility.Status("Reading " + (counter++) + " of " + allFiles.size());
             ArrayList<String> text = basefunction.ReadAllLines(allFiles.get(i).toString());

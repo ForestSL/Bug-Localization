@@ -7,6 +7,9 @@ import java.util.HashMap;
 
 public class GlobalVar {
 	
+	/*存储用户选择的指定bug*/
+	public static String bugID=null;
+	
 	/*源代码和bug报告下载路径*/
 	public static String codeFolderName="GithubCode\\cxf.git\\cxf-2.7.11\\";
 	public static String bugReportName="BugReport\\cxf2.7.11.xml";
@@ -42,6 +45,6 @@ public class GlobalVar {
 //        		"g.java", "100", "5", "100", "34", "66"
 //        	} 
 //        };
-    public static Object objs[][]=null;/*获取文件名和bug数后统一更新显示数据*/
+    public static String objs[][]=null;/*获取文件名和bug数后统一更新显示数据*/
 
 }

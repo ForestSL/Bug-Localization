@@ -19,6 +19,7 @@ import org.eclipse.ui.part.ViewPart;
 import com.sl.v0.buglocation.BaseFunction;
 import com.sl.v0.buglocation.DataCreator;
 import com.sl.v0.buglocation.DealwithResult;
+import com.sl.v0.buglocation.datas.Bug;
 import com.sl.v0.datas.GlobalVar;
 import com.sl.v0.datas.TableCell;
 
@@ -55,29 +56,14 @@ public class View3 extends ViewPart implements ISelectionListener{
     public void selectionChanged(IWorkbenchPart part, ISelection selection) {
     	IStructuredSelection structuredSelection = (IStructuredSelection)selection;
     	Object obj = structuredSelection.getFirstElement();
-    	TableCell temp = (TableCell)obj;
-    	if(temp.getFile() != null&&temp.getFile()!="文件"){
+    	Bug temp = (Bug)obj;
+    	if(temp.getBugId()!=null){
+    		GlobalVar.bugID=temp.getBugId();
     		//text.setText("此处详细展示"+temp.getFile()+"文件通过"+temp.getMethod()+"方法定位的bug结果,bug数为"+temp.getCount());
-    		String file=temp.getFile();
-    		String method=temp.getMethod();
-    		/*根据VsmResult显示具体bug信息*/
-    		ArrayList<String> buglist=new ArrayList<String>();
-    		buglist=DealwithResult.VsmResult.get(file);
-    		ArrayList<String> buginfo=new ArrayList<String>();
-    		buginfo=(new BaseFunction()).ReadAllLines(DataCreator.ReportFolderPath+"Buglist.txt");
     		String content="bug信息如下："+"\n";
-    		for(int i=0;i<buglist.size();i++){
-    			for(int j=0;j<buginfo.size();j++){
-    				String[] info=buginfo.get(j).split("#####");
-    				if(buglist.get(i).equals(info[0])){
-    					String[] con=buginfo.get(i).split("#####");
-    					content+="bugID:"+con[0]+"\n";
-    					content+="bugSummary:"+con[1]+"\n";
-    					content+="bugDescription:"+con[2]+"\n";
-    					content+="\n";
-    				}
-    			}
-    		}
+    		content+=temp.getBugId()+"\n";
+    		content+=temp.getSummary()+"\n";
+    		content+=temp.getDescription();
     		text.setText(content);
     	}
     	else
