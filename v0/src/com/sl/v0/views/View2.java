@@ -8,7 +8,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -44,8 +51,10 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.help.IWorkbenchHelpSystem;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 
+import com.sl.v0.Activator;
 import com.sl.v0.buglocation.DataCreator;
 import com.sl.v0.buglocation.DealwithResult;
 import com.sl.v0.buglocation.datas.BugModel;
@@ -275,7 +284,28 @@ public class View2 extends ViewPart {
         		
         		//System.out.println(GlobalVar.filename);
                 
-                /*TODO:根据文件名在编辑器中打开*/
+                /*TODO:根据文件名在编辑器中打开
+                 * 全路径 可打开 可保存 初始没问题
+                 * 遗留问题：文件不是java格式 重复打开相同文件无提示*/
+        		// 根据不同列表项得到其相应的editorInput对象和editorID，其中
+                // editorID指该编辑器在plugin.xml文件中设置id标识值
+                String listStr = GlobalVar.filename;
+                IEditorInput editorInput = new EditorInput();
+                String editorID = "com.sl.v0.editors.Editor";
+                
+                // 如果editorInput或editorID为空则中断返回
+                if (editorInput == null || editorID == null)
+                    return;
+                // 取得IWorkbenchPage，并搜索使用editorInput对象对应的编辑器
+                IWorkbenchPage workbenchPage = getViewSite().getPage();
+                IEditorPart editor = workbenchPage.findEditor(editorInput);
+
+                try {
+                	workbenchPage.openEditor(editorInput, editorID);
+                } catch (PartInitException e2) {
+                	e2.printStackTrace();
+                }
+        		
         		
         		
             }

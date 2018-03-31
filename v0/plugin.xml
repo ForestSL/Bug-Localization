@@ -66,5 +66,14 @@
          </action>
       </actionSet>
    	</extension>
+   	
+   	<extension point="org.eclipse.ui.editors">
+  		<editor 
+        	name="java文件"
+        	icon="icons/sample.gif"
+        	class="com.sl.v0.editors.Editor"
+        	id="com.sl.v0.editors.Editor">
+  		</editor>
+	</extension>
    
 </plugin>

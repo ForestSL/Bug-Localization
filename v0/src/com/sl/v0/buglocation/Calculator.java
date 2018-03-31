@@ -55,7 +55,7 @@ public class Calculator {
 	public static void main(String[] args) {  
 		//(new DataCreator()).GetDatas();
 		//RunVSM("GithubCode\\cxf.git\\cxf-2.7.11\\");
-		boolean[] method={false,false,false,false,true};
+		boolean[] method={false,false,true,false,false};
 		Run(GlobalVar.codeFolderName,method);
 	} 
 		
@@ -624,10 +624,27 @@ public class Calculator {
             double pEntropy = 1.0 / 2 * (new Extensions()).JensenEntropy(p);
             double qEntropy = 1.0 / 2 * (new Extensions()).JensenEntropy(queryVector);
             
-            //System.out.println(sumEntropy);
+//            System.out.println(sumEntropy);
+//            System.out.println(pEntropy);
+//            System.out.println(qEntropy);
 
             double jensenDivergence = sumEntropy - pEntropy - qEntropy;
+//            System.out.println(jensenDivergence);
+//            System.out.println("----------------------------");
             double jensenSimilarity = 1 - jensenDivergence;
+            
+            /*处理相似度结果*/
+            if(jensenSimilarity>=-1&&jensenSimilarity<=1)
+            	jensenSimilarity=Math.abs(jensenSimilarity);
+            else{
+            	String str=""+jensenSimilarity;
+            	if(str.split("\\.")!=null){
+            		if(str.split("\\.").length>1){
+            			String tmp="0."+str.split("\\.")[1];
+            			jensenSimilarity=Double.parseDouble(tmp);
+            		}
+            	}
+            }
 
             similarityDictionary.put(key, jensenSimilarity);
 		}       

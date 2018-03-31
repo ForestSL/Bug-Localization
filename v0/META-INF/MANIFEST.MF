@@ -16,4 +16,5 @@ Bundle-ClassPath: .,
  lib/slf4j-log4j12-1.7.9.jar,
  lib/org.eclipse.jgit-4.9.2.201712150930-r.jar,
  lib/org.eclipse.core.resources.jar,
- lib/Jama-1.0.3.jar
+ lib/Jama-1.0.3.jar,
+ lib/org.eclipse.ui.ide-3.3.2.jar

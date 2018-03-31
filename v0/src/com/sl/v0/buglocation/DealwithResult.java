@@ -29,7 +29,7 @@ public class DealwithResult {
 	/*测试用*/
 	public static void main(String args[]){
 		//GetVsmResult(FolderName);
-		boolean[] method={false,false,true,false,false};
+		boolean[] method={true,true,true,true,true};
 		execute(method);
 	} 
 	
@@ -55,10 +55,10 @@ public class DealwithResult {
 			String filePath=con[1];/*filePath为文件完整路径*/
 			String[] path=filePath.split("\\\\");
 			String file=path[path.length-1];
-			fileList.put(index,file);/*索引-文件名*/
+			fileList.put(index,filePath);/*索引-文件名*/
 			
-			/*TODO:若要将文件名改为文件路径 修改上下两行 将file改为filePath*/
-			GlobalVar.objs[i][0]=file;/*table赋值 文件名*/
+			/*TODO:若要将文件名改为文件路径 修改上下两行 将file和filePath互换*/
+			GlobalVar.objs[i][0]=filePath;/*table赋值 文件名*/
 			for(int j=1;j<6;j++)
 				GlobalVar.objs[i][j]="0";
 		}
