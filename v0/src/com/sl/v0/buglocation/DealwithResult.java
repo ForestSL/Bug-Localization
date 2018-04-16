@@ -42,6 +42,9 @@ public class DealwithResult {
 		/*提取数据处理*/
 		(new DataCreator()).GetDatas();
 		
+		/*进行bug定位计算*/
+		(new Calculator()).Run(GlobalVar.codeFolderName,method);
+		
 		/*初始化全局量table*/
 		ArrayList<String> content=new ArrayList<String>();
 		content=(new BaseFunction()).ReadAllLines(FolderName+"\\Filelist.txt");
@@ -58,13 +61,10 @@ public class DealwithResult {
 			fileList.put(index,filePath);/*索引-文件名*/
 			
 			/*TODO:若要将文件名改为文件路径 修改上下两行 将file和filePath互换*/
-			GlobalVar.objs[i][0]=filePath;/*table赋值 文件名*/
-			for(int j=1;j<6;j++)
-				GlobalVar.objs[i][j]="0";
+				GlobalVar.objs[i][0]=filePath;/*table赋值 文件名*/
+				for(int j=1;j<6;j++)
+					GlobalVar.objs[i][j]="0";
 		}
-		
-		/*进行bug定位计算*/
-		(new Calculator()).Run(GlobalVar.codeFolderName,method);
 		
 		int index=0;
 		if(method[0]==true){/*VSM*/
@@ -81,7 +81,7 @@ public class DealwithResult {
 			    	//System.out.println("i:"+i+"index"+index+GlobalVar.objs[i][index]);
 			    }
 			}
-			System.out.println("0000:"+GlobalVar.objs[3][1]);
+			//System.out.println("0000:"+GlobalVar.objs[3][1]);
 		}
 		if(method[1]==true){/*LSI*/
 			index=2;

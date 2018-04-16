@@ -49,12 +49,29 @@ public class BaseFunction {
 	public static ArrayList<String> TextWithFilter(String text)
 	{
 		ArrayList<String> re=new ArrayList<String>();
-		String[] cur=text.split("[^a-zA-Z]+");
-		for(int i=0;i<cur.length;i++){
-			String word=cur[i].toLowerCase();/*全转小写 去重*/
-			if(!re.contains(word))
-				re.add(word);
-		}
+		text=text.toLowerCase();/*全转小写*/
+		
+		/*TODO:除去StopWords.txt中的词*/
+		//System.out.println(Thread.currentThread().getContextClassLoader().getResource("/").getPath());
+		//ArrayList<String> stopwords=ReadAllLines("E://StopWords.txt");
+		
+//		String[] tmp1=text.split(" ");
+//		for(int i=0;i<tmp1.length;i++){
+//			text=tmp1[i];
+//			String[] tmp2=text.split("(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z](?:s[a-z]|[abcdefghijklmnopqrtuvwxyz]))");
+//			for(int j=0;j<tmp2.length;j++){ 
+//				text=tmp2[j];
+//				//System.out.println(text);
+				
+				String[] cur=text.split("[^a-zA-Z]+");
+				for(int k=0;k<cur.length;k++){
+					//if(!re.contains(word))/*去重*/
+					//if(!stopwords.contains(cur[k]))/*不包含在stopwords.txt中*/
+						re.add(cur[k]);
+				}
+				
+//			}
+//		}	
 		return re;
 	}
 	

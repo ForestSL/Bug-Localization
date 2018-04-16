@@ -17,10 +17,6 @@ public final class Extensions{
 			result[i] = (vector1[i] + vector2[i]) / 2;
 		}
 
-//		for(int i=0;i<result.length;i++){
-//			if(result[i]!=0)
-//				System.out.println(result[i]);
-//		}
 		return result;
 	}
 
@@ -35,8 +31,6 @@ public final class Extensions{
 		double sum=0;
 		for(int i=0;i<d.size();i++)
 			sum+=d.get(i);
-		//System.out.println(sum);
-		//System.out.println(-1.0*sum);
 		return -1.0 * sum;
 	}
 }

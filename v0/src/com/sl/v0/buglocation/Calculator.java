@@ -53,9 +53,9 @@ public class Calculator {
 	
     /*测试用*/
 	public static void main(String[] args) {  
-		//(new DataCreator()).GetDatas();
+		(new DataCreator()).GetDatas();
 		//RunVSM("GithubCode\\cxf.git\\cxf-2.7.11\\");
-		boolean[] method={false,false,true,false,false};
+		boolean[] method={true,true,true,true,true};
 		Run(GlobalVar.codeFolderName,method);
 	} 
 		
@@ -149,7 +149,7 @@ public class Calculator {
         int time=allFiles.size();
         if(allFiles.size()>100)
         	time=100;
-        
+
         for(int i=0;i<time;i++){
             //Utility.Status("Reading " + (counter++) + " of " + allFiles.size());
             ArrayList<String> text = basefunction.ReadAllLines(allFiles.get(i).toString());
@@ -169,22 +169,26 @@ public class Calculator {
 		if (runLSI)
 			DoSvd();
         
+		/*修改：计算所有bug相似度-->只计算当前选中的bug对应的相似度
+		 * 即bugs.get(i).getName()-->GlobalVar.bugID*/
+		//System.out.println(GlobalVar.bugID);
+		//System.out.println(bugs.get(0).getName());
         /*Create files*/
-        int completedCount = 0;
-        for(int i=0;i<totalbugsCount;i++){
-        	++completedCount;
+        //int completedCount = 0;
+        //for(int i=0;i<totalbugsCount;i++){
+        //	++completedCount;
         	try{
-				Utility.Status("Creating Stuffs: " + bugs.get(i).getName() + " " + completedCount + " of " + totalbugsCount);
+		//		Utility.Status("Creating Stuffs: " + bugs.get(i).getName() + " " + completedCount + " of " + totalbugsCount);
 
-				if ( ! ( runVSM&&!completedVsm.contains(bugs.get(i).getName()) 
-						|| runLSI&&!completedLsi.contains(bugs.get(i).getName()) 
-						|| runJSM&&!completedJsm.contains(bugs.get(i).getName()) 
-						|| runNGD&&!completedNgd.contains(bugs.get(i).getName()) 
-						|| runPMI&&!completedPmi.contains(bugs.get(i).getName()))){
-					Utility.Status("Already Completed Stuff: " + bugs.get(i).getName() + " " + completedCount + " of " + totalbugsCount);
+				if ( ! ( runVSM&&!completedVsm.contains(GlobalVar.bugID) 
+						|| runLSI&&!completedLsi.contains(GlobalVar.bugID) 
+						|| runJSM&&!completedJsm.contains(GlobalVar.bugID) 
+						|| runNGD&&!completedNgd.contains(GlobalVar.bugID) 
+						|| runPMI&&!completedPmi.contains(GlobalVar.bugID))){
+					Utility.Status("Already Completed Stuff: " + GlobalVar.bugID);
 				}else{
 
-				String bugFolderPath = datasetFolderPath + bugs.get(i).getName() + "\\";
+				String bugFolderPath = datasetFolderPath + GlobalVar.bugID + "\\";
 				if (!(new File(bugFolderPath + "Results")).isDirectory()){
 					(new File(bugFolderPath + "Results")).mkdirs();
 				}
@@ -192,47 +196,47 @@ public class Calculator {
 				ArrayList<String> queryText = basefunction.ReadAllLines(bugFolderPath + QueryWithFilterFileName);
 				//System.out.println("query:"+queryText.get(1));
 				
-				if ( runVSM && !completedVsm.contains(bugs.get(i).getName())){
-					ComputeVsm(bugFolderPath, bugs.get(i).getName(), queryText);
-					completedVsm.add(bugs.get(i).getName());
+				if ( runVSM && !completedVsm.contains(GlobalVar.bugID)){
+					ComputeVsm(bugFolderPath, GlobalVar.bugID, queryText);
+					completedVsm.add(GlobalVar.bugID);
 				}
 				
-				if ( runLSI && !completedLsi.contains(bugs.get(i).getName()))
+				if ( runLSI && !completedLsi.contains(GlobalVar.bugID))
 				{
 					if (!(new File(bugFolderPath + LsiOutputFolderName)).isDirectory())
 					{
 						(new File(bugFolderPath + LsiOutputFolderName)).mkdirs();
 					}
 
-					ComputeLsi(bugFolderPath, bugs.get(i).getName(), queryText);
-					completedLsi.add(bugs.get(i).getName());
+					ComputeLsi(bugFolderPath, GlobalVar.bugID, queryText);
+					completedLsi.add(GlobalVar.bugID);
 				}
 
-				if ( runJSM && !completedJsm.contains(bugs.get(i).getName())){
-					ComputeJsm(bugFolderPath, bugs.get(i).getName(), queryText);
-					completedJsm.add(bugs.get(i).getName());
+				if ( runJSM && !completedJsm.contains(GlobalVar.bugID)){
+					ComputeJsm(bugFolderPath, GlobalVar.bugID, queryText);
+					completedJsm.add(GlobalVar.bugID);
 				}
 				
-				if ( runNGD && !completedNgd.contains(bugs.get(i).getName()))
+				if ( runNGD && !completedNgd.contains(GlobalVar.bugID))
 				{
-					ComputeNgd(bugFolderPath, bugs.get(i).getName(), queryText);
-					completedNgd.add(bugs.get(i).getName());
+					ComputeNgd(bugFolderPath, GlobalVar.bugID, queryText);
+					completedNgd.add(GlobalVar.bugID);
 				}
 				
-				if ( runPMI && !completedPmi.contains(bugs.get(i).getName()))
+				if ( runPMI && !completedPmi.contains(GlobalVar.bugID))
 				{
-					ComputePmi(bugFolderPath, bugs.get(i).getName(), queryText);
-					completedPmi.add(bugs.get(i).getName());
+					ComputePmi(bugFolderPath, GlobalVar.bugID, queryText);
+					completedPmi.add(GlobalVar.bugID);
 				}
 				
-				Utility.Status("DONE Creating Stuff: " + bugs.get(i).getName() + " (" + completedCount + " of " + totalbugsCount + ")");
+				Utility.Status("DONE Creating Stuff: " + GlobalVar.bugID);
 			
 				}
         	}
 			catch (RuntimeException e)
 			{
-				Utility.WriteErrorCommon(path + bugs.get(i).getName(), e.getMessage());
-				Utility.Status("ERROR Creating Stuff: " + path + bugs.get(i).getName() + " (" + completedCount + " of " + totalbugsCount + ")");
+				Utility.WriteErrorCommon(path + GlobalVar.bugID, e.getMessage());
+				Utility.Status("ERROR Creating Stuff: " + path + GlobalVar.bugID);
 			}
 			finally
 			{
@@ -247,7 +251,7 @@ public class Calculator {
 				if (runPMI)
 					basefunction.WriteAllLines(pmiCompletedFilePath, completedPmi);				
 			}
-        }
+        //}
         JOptionPane.showMessageDialog(null,"生成java文件与bug报告相似度文件");        
 	} 
 	
@@ -260,7 +264,7 @@ public class Calculator {
 		/* compute tf and idf*/
 		Iterator it = CodeFilesWithContent.keySet().iterator();   
 		while(it.hasNext()){
-            MyDoubleDictionary fileTfDictionary = new MyDoubleDictionary();
+            MyDoubleDictionary fileTfDictionary = new MyDoubleDictionary();/*单词-个数*/
             
             /* for each word in the file add 1 to the count*/
             String key=(String)it.next();/*key:文件路径*/
@@ -270,14 +274,14 @@ public class Calculator {
             }
 
             /* save tf result for the file*/
-            TfDictionary.put(key, fileTfDictionary);
+            TfDictionary.put(key, fileTfDictionary);/*文件，单词-个数*/
 
             /* for each DISTINCT word found in the file increase the idf by 1.
              * At this point idf holds document frequency*/
             Iterator it2=fileTfDictionary.keySet().iterator();
             while(it2.hasNext()){
             	String key2=(String) it2.next();
-            	IdfDictionary.Add(key2);
+            	IdfDictionary.Add(key2);/*单词-文件数*/
             }
         }
         
@@ -315,12 +319,6 @@ public class Calculator {
 	
 	private static void ComputeVsm(String outputFolderPath, String bugName, List<String> queryText){
 		Utility.Status("Creating VSM: " + bugName);
-		
-		/*判断相似度文件是否已经生成*/
-		if ((new File(outputFolderPath + VsmFileName)).isFile()){
-			Utility.Status("Vsm File Exists.");
-			return;
-		}
 
         /* CREATE QUERY TFIDF*/
 		MyDoubleDictionary queryTfIdfDictionary = new MyDoubleDictionary();
@@ -335,8 +333,6 @@ public class Calculator {
         Iterator it=queryTfIdfDictionary.keySet().iterator();
         while(it.hasNext()){
         	Object key= it.next();
-        	//System.out.println(key.toString());
-        	//System.out.println(queryTfIdfDictionary.get(key));
             list.add((Double)queryTfIdfDictionary.get(key));
         }
         Collections.sort(list);
@@ -360,6 +356,13 @@ public class Calculator {
         	String key3=(String) it3.next();
         	//if(it3.next()=="675"||it3.next()=="6405"){
         		double cosineSimilarityWithUseCase = cosineSimilarityCalculator.GetSimilarity(TfIdfDictionary.get(key3));
+        		
+        		/*处理结果*/
+        		if(cosineSimilarityWithUseCase<0)
+        			cosineSimilarityWithUseCase=0;
+        		if(cosineSimilarityWithUseCase>1)
+        			cosineSimilarityWithUseCase=1;
+        		
         		similarityDictionary.put(key3, cosineSimilarityWithUseCase);
             //}
         }
@@ -515,6 +518,13 @@ public class Calculator {
 	        for(int i=0;i<list.size();i++){
 	        	String key=list.get(i).getKey();
 	        	Double value=list.get(i).getValue();
+	        	
+	        	/*处理结果*/
+	        	if(value<0)
+	        		value=(double) 0;
+	        	if(value>1)
+	        		value=(double) 1;
+	        	
 	        	String.format(pattern, value);
 	        	content.add(key+" "+value);
 	        }
@@ -553,8 +563,10 @@ public class Calculator {
     	for(int i=0;i<bugs.size();i++){
     		ArrayList<String> content=new ArrayList<String>();
     		content=basefunction.ReadAllLines(bugs.get(i).getAbsolutePath()+"\\"+QueryWithFilterFileName);
-    		for(int j=0;j<content.size();j++)
-    			allQueryTexts.add(content.get(j));
+    		for(int j=0;j<content.size();j++){
+    			if(!allQueryTexts.contains(content.get(j)))/*去重*/
+    				allQueryTexts.add(content.get(j));
+    		}
     	}
 
     	/* create the vector for each source code*/
@@ -573,32 +585,22 @@ public class Calculator {
     private static void ComputeJsm(String outputFolderPath, String bugName, List<String> queryText){
 		
 		Utility.Status("Computing Source Vectors Jsm: " + bugName);
-
-		if ((new File(outputFolderPath + JsmFileName)).isFile()){
-			Utility.Status("Jsm File Exists.");
-			return;
-		}
 		
 		/* create the vector for query*/
 		double[] queryVector = new double[AllUniqueWordsInSourceAndQuery.size()];
 		int queryCounter = 0;
 		for(int i=0;i<AllUniqueWordsInSourceAndQuery.size();i++){
 			String uniqueWord=AllUniqueWordsInSourceAndQuery.get(i);
-			//System.out.println(uniqueWord);
 			if(queryText.contains(uniqueWord)){
-				//System.out.println("-------------------------");
 				double tmp=0;/*queryText中uniqueWord的个数*/
 				for(int j=0;j<queryText.size();j++){
 					if(queryText.get(j).equals(uniqueWord))
 						tmp++;
 				}
-				//System.out.println(tmp);
 				queryVector[queryCounter] = tmp / queryText.size();
-				//System.out.println(queryVector[queryCounter]);
 			}else{
 				queryVector[queryCounter] = 0;
 			}
-			//System.out.println(queryVector[queryCounter]);
 			queryCounter++;
 		}
 
@@ -624,27 +626,19 @@ public class Calculator {
             double pEntropy = 1.0 / 2 * (new Extensions()).JensenEntropy(p);
             double qEntropy = 1.0 / 2 * (new Extensions()).JensenEntropy(queryVector);
             
-//            System.out.println(sumEntropy);
-//            System.out.println(pEntropy);
-//            System.out.println(qEntropy);
-
             double jensenDivergence = sumEntropy - pEntropy - qEntropy;
-//            System.out.println(jensenDivergence);
-//            System.out.println("----------------------------");
             double jensenSimilarity = 1 - jensenDivergence;
             
-            /*处理相似度结果*/
-            if(jensenSimilarity>=-1&&jensenSimilarity<=1)
-            	jensenSimilarity=Math.abs(jensenSimilarity);
-            else{
-            	String str=""+jensenSimilarity;
-            	if(str.split("\\.")!=null){
-            		if(str.split("\\.").length>1){
-            			String tmp="0."+str.split("\\.")[1];
-            			jensenSimilarity=Double.parseDouble(tmp);
-            		}
-            	}
-            }
+            /*处理结果数据*/
+            if(jensenSimilarity<0)
+            	jensenSimilarity=0;
+            if(jensenSimilarity>1)
+            	jensenSimilarity=1;
+            
+//            System.out.println(pEntropy);
+//            System.out.println(qEntropy);
+//            System.out.println(sumEntropy);
+//            System.out.println("-------------------------------");
 
             similarityDictionary.put(key, jensenSimilarity);
 		}       
@@ -655,16 +649,13 @@ public class Calculator {
         Utility.Status("DONE Computing Source Vectors Jensen: " + bugName);
 
     }
+    
+    /*NGD start*/
 	/*JSM end*/
     
     /*NGD start*/
     private static void ComputeNgd(String ngdOutputFolderPath, String bugName, ArrayList<String> fileText){
     	Utility.Status("Creating NGD: " + bugName);
-    	
-    	if ((new File(ngdOutputFolderPath + NgdFileName)).isFile()){
-			Utility.Status("Ngd File Exists.");
-			return;
-		}
 
 		MyDoubleDictionary tssDocumentDictionary = new MyDoubleDictionary();
 		double logD = Math.log10(CodeFilesWithContent.size() + 1); // just make the N bigger than any
@@ -787,6 +778,13 @@ public class Calculator {
 
 			double tss = (1.0 / 2) * ((sumQueryTimeIdf / sumQueryIdf) + (sumCorpusTimeIdf / sumCorpusIdf));
 			//System.out.println(tss);
+			
+			/*处理结果*/
+			if(tss<0)
+				tss=0;
+			if(tss>1)
+				tss=1;
+			
 			tssDocumentDictionary.put(sourceFileWithWords.getKey(), tss);
 		}
 		
@@ -819,8 +817,10 @@ public class Calculator {
 		while(it.hasNext()){
 			String key=(String) it.next();
 			ArrayList<String> wordlist=new ArrayList<String>();
-			for(int i=0;i<CodeFilesWithContent.get(key).size();i++)
-				wordlist.add(CodeFilesWithContent.get(key).get(i));
+			for(int i=0;i<CodeFilesWithContent.get(key).size();i++){
+				if(!wordlist.contains(CodeFilesWithContent.get(key).get(i)))/*去重*/
+					wordlist.add(CodeFilesWithContent.get(key).get(i));
+			}
 			for(int i=0;i<wordlist.size();i++){
 				if (!WordAndContainingFiles.containsKey(wordlist.get(i)))
 				{
@@ -834,11 +834,6 @@ public class Calculator {
     
     private static void ComputePmi(String pmiOutputFolderPath, String reqName, ArrayList<String> reqText){
     	Utility.Status("Creating Pmi: " + reqName);
-    	
-		if ((new File(pmiOutputFolderPath + PmiFileName)).isFile()){
-			Utility.Status("Pmi File Exists.");
-			return;
-		}
 
 		/* Create list of word contained in query*/
 		ArrayList<String> distinctReqWordList = new ArrayList<String>();
@@ -965,6 +960,13 @@ public class Calculator {
 			}
 
 			double tss = (1.0 / 2) * ((sumReqTimeIdf / sumReqIdf) + (sumSourceTimeIdf / sumSourceIdf));
+			
+			/*结果处理*/
+			if(tss<0)
+				tss=0;
+			if(tss>1)
+				tss=1;
+			
 			tssDocumentDictionary.put(sourceFileWithWords.getKey(), tss);
 		}
 
