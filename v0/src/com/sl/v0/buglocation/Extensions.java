@@ -9,7 +9,8 @@ public final class Extensions{
 	
 	public static double[] JensenSum(double[] vector1, double[] vector2){		
 		if (vector1.length != vector2.length){
-			throw new RuntimeException("Length " + vector1.length + " does not match vector 2 length: " + vector2.length);
+			throw new RuntimeException("Length " + vector1.length +
+					" does not match vector 2 length: " + vector2.length);
 		}
 
 		double[] result = new double[vector1.length];

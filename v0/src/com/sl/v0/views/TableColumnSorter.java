@@ -5,7 +5,7 @@ import java.util.Locale;
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
  
-public class TableColumnSorter { 
+public class TableColumnSorter {
 	
 	/*table…˝–Ú≈≈¡–*/
 	public static void addSorter(final Table table, final TableColumn column) {  

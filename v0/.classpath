@@ -1,15 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.ui.ide-3.3.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.core.resources.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/org.eclipse.jgit-4.9.2.201712150930-r.jar"/>
+	<classpathentry kind="src" path="test"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="D:/eclipse/plugins/org.evosuite.plugins.eclipse.deps_1.0.5.201705151215/lib/evosuite.jar"/>
+	<classpathentry kind="lib" path="lib/Jama-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.1.54.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.resources.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jgit-4.9.2.201712150930-r.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.ui.ide-3.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.9.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.7.9.jar"/>
-	<classpathentry kind="lib" path="lib/Jama-1.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/javax.annotation_1.2.0.v201401042248.jar"/>
+	<classpathentry kind="lib" path="lib/javax.inject_1.0.0.v20091030.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.commands_3.6.100.v20140528-1422.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.contenttype_3.4.200.v20140207-1251.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.jobs_3.6.0.v20140424-0053.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.runtime_3.10.0.v20140318-2214.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.e4.ui.workbench3_0.12.0.v20140227-2118.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.equinox.app_1.3.200.v20130910-1609.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.equinox.common_3.6.200.v20130402-1505.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.equinox.preferences_3.5.200.v20140224-1527.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.equinox.registry_3.5.400.v20140428-1507.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.equinox.registry.nl_zh_4.2.0.v20130724060447.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.fx.osgi_2.4.0.201605100504.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jface_3.10.1.v20140813-1009.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.osgi_3.10.1.v20140909-1633.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.osgi.compatibility.state_1.0.1.v20140709-1414.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.osgi.nl_zh_4.2.0.v20130724060447.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.swt_3.103.1.v20140903-1938.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.swt.nl_zh_4.2.0.v20130724060447.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.swt.win32.win32.x86_3.103.1.v20140903-1947.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.swt.win32.win32.x86.nl_zh_4.2.0.v20130724060447.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.ui_3.106.0.v20140812-1751.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.ui.workbench_3.106.1.v20140827-1737.jar"/>
+	<classpathentry kind="lib" path="lib/runtime_registry_compatibility.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

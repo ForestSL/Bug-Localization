@@ -154,7 +154,6 @@ public class DataCreator {
 	    				//System.out.println(n.getNodeName() + ":" + n.getTextContent());
 	    				bug.setDescription(n.getTextContent());
 	    			}
-	    			/*TODO:c#项目中获取fixedFiles标签（暂未理解）*/
 	    		}
 	    		//System.out.println("---------------------------------");
 	    		
